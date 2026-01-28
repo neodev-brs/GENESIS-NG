@@ -126,31 +126,27 @@
   <div class="fr-container">
 
     <!-- BARRE ACTIONS – IDENTIQUE AU CODE INITIAL -->
-<button
-  class="fr-btn fr-btn--tertiary fr-btn--icon-left"
-  id="btn-back-home">
+<button>
+ <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
+  <div class="fr-col">
+    <button
+      class="fr-btn fr-btn--tertiary fr-btn--icon-left"
+      id="btn-back-home">
+      <span aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+             fill="currentColor" width="1.25em" height="1.25em">
+          <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+        </svg>
+      </span>
+      Retour
+    </button>
+  </div>
 
-  <span aria-hidden="true">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      width="1.25em"
-      height="1.25em"
-      style="vertical-align: middle;"
-    >
-      <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"/>
-    </svg>
-  </span>
-  
-  Retour
-</button>
-
-
-  <button id="btn-show-tuto"
-          class="fr-btn fr-btn--secondary fr-ml-auto">
-    Tutoriel
-  </button>
+  <div class="fr-col fr-text--right">
+    <button id="btn-show-tuto" class="fr-btn fr-btn--secondary">
+      Tutoriel
+    </button>
+  </div>
 </div>
 
 
@@ -213,29 +209,24 @@
 <!-- VUE TUTORIEL -->
 <div id="view-tuto" hidden>
 
-  <main class="genesis-main">
-    <div class="fr-container">
+ <main class="genesis-main">
+  <div class="fr-container">
 
-      <!-- BARRE ACTIONS (même hauteur que la page analyse) -->
-      <button
-  class="fr-btn fr-btn--tertiary fr-btn--icon-left"
-  id="btn-back-analyse"
-
-  <span aria-hidden="true">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      width="1.25em"
-      height="1.25em"
-      style="vertical-align: middle;"
-    >
-      <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"/>
-    </svg>
-  </span>
-
-  Retour
-</button>
+    <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
+      <div class="fr-col">
+        <button
+          class="fr-btn fr-btn--tertiary fr-btn--icon-left"
+          id="btn-back-analyse">
+          <span aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="currentColor" width="1.25em" height="1.25em">
+              <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+            </svg>
+          </span>
+          Retour
+        </button>
+      </div>
+    </div>
 
 
       <!-- CONTENU TUTO -->
