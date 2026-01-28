@@ -95,55 +95,6 @@
   display: block;            /* supprime les décalages baseline */
 }
 
-/* Tuile DSFR (boutons carrés type "case") */
-.genesis-tiles {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.genesis-tile-btn {
-  width: 92px;
-  height: 85px;
-  padding: 0;
-  background: #f5f5fe; /* proche DSFR "bleu très clair" */
-  border: 1px solid var(--border-default-grey);
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.genesis-tile-btn::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: #000091; /* bleu République DSFR */
-}
-
-.genesis-tile-btn .tile-icon {
-  display: block;
-  width: 38px;
-  height: 38px;
-}
-
-.genesis-tile-btn .tile-label {
-  text-align: center;
-  line-height: 1.1;
-  font-size: 0.9rem;
-}
-
-@media (min-width: 768px) {
-  .genesis-tiles {
-    justify-content: flex-start;
-  }
-}
-
   </style>
 </head>
 
@@ -183,31 +134,34 @@
             Sélectionnez le type de contenu à analyser.
           </p>
 
-         <div class="genesis-tiles fr-mt-2w">
+          <div class="fr-grid-row fr-grid-row--gutters">
+            <!-- Bouton Entête (fonctionnel) -->
+            <div class="fr-col-12 fr-col-md-6">
+              <button id="btn-go-analyse" class="fr-btn fr-btn--lg fr-btn--icon-left fr-icon-mail-line fr-btn--secondary fr-btn--block">
+                Entête de mail
+              </button>
+              <p class="fr-text--sm fr-mt-1w">
+                Extraction d’IP, e-mails et informations sur l’appareil expéditeur.
+              </p>
+            </div>
 
-  <button id="btn-go-analyse"
-          class="fr-btn fr-btn--secondary genesis-tile-btn"
-          type="button">
-    <img class="tile-icon"
-         src="https://data.pandasuite.com/svgs/672f6168bd8aaa5eec00086f-svgo.svg"
-         alt=""
-         aria-hidden="true">
-    <span class="tile-label">Entête<br>de mail</span>
-  </button>
+            <!-- Bouton Réquisition (à venir) -->
+            <div class="fr-col-12 fr-col-md-6">
+              <button id="btn-go-req" class="fr-btn fr-btn--lg fr-btn--icon-left fr-icon-file-text-line fr-btn--block" disabled>
+                Résultat réquisition
+              </button>
+              <p class="fr-text--sm fr-mt-1w">
+                Module V2 : extraction depuis ODT/CSV (mail, IP, téléphone, adresses…).
+              </p>
+              <p class="fr-hint-text">Disponible prochainement.</p>
+            </div>
+          </div>
 
-  <button id="btn-go-req"
-          class="fr-btn fr-btn--secondary genesis-tile-btn"
-          type="button"
-          disabled>
-    <img class="tile-icon"
-         src="https://data.pandasuite.com/svgs/672f6168bd8aaa5eec00086f-svgo.svg"
-         alt=""
-         aria-hidden="true">
-    <span class="tile-label">Historique de<br>réparation</span>
-  </button>
-
+        </div>
+      </div>
+    </div>
+  </main>
 </div>
-
 
 <!-- VUE ANALYSE -->
 <div id="view-analyse" hidden>
