@@ -702,11 +702,9 @@
   const viewAnalyse = document.getElementById('view-analyse');
   const viewTuto    = document.getElementById('view-tuto');
 
-  const btnGoAnalyse   = document.getElementById('btn-go-analyse'); // <a>
-  const btnGoReq       = document.getElementById('btn-go-req');     // <a> (carte V2)
-  const btnShowTuto    = document.getElementById('btn-show-tuto');  // <button>
-  const btnBackAnalyse = document.getElementById('btn-back-analyse'); // <button>
-  const btnBackHome    = document.getElementById('btn-back-home');    // <button>
+  const btnShowTuto    = document.getElementById('btn-show-tuto');
+  const btnBackAnalyse = document.getElementById('btn-back-analyse');
+  const btnBackHome    = document.getElementById('btn-back-home');
 
   function showView(target) {
     viewHome.hidden = true;
@@ -717,15 +715,21 @@
     window.scrollTo(0, 0);
   }
 
-  // Accueil → Analyse (carte cliquable)
-  btnGoAnalyse?.addEventListener('click', (e) => {
-    e.preventDefault();
-    showView(viewAnalyse);
-  });
+  // ✅ Accueil → Analyse (CARTE cliquable)
+  // On écoute tout le document et on récupère le lien/clique cible même si tu cliques sur un élément enfant
+  document.addEventListener('click', (e) => {
+    const goAnalyse = e.target.closest('#btn-go-analyse'); // l'ID doit être sur le <a> de la carte
+    if (goAnalyse) {
+      e.preventDefault();
+      showView(viewAnalyse);
+      return;
+    }
 
-  // Accueil → Réquisition (désactivée => on bloque juste le clic)
-  btnGoReq?.addEventListener('click', (e) => {
-    e.preventDefault();
+    const goReq = e.target.closest('#btn-go-req'); // carte V2
+    if (goReq) {
+      e.preventDefault(); // on bloque la navigation
+      return;
+    }
   });
 
   // Analyse → Tutoriel
