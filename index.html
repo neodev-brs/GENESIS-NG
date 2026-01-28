@@ -125,22 +125,20 @@
 <main class="genesis-main">
   <div class="fr-container">
 
-    <!-- BOUTON RETOUR VERS ACCUEIL -->
+<!-- BOUTON RETOUR VERS ACCUEIL ET TUTO -->
 <div class="fr-grid-row fr-grid-row--gutters fr-mb-2w">
   <div class="fr-col-6">
-    <button id="btn-back-home" class="fr-btn fr-btn--tertiary fr-btn--icon-left">
+    <button id="btn-back-home" class="fr-btn fr-btn--tertiary fr-btn--icon-left fr-btn--sm">
       <span aria-hidden="true" class="fr-icon-arrow-left-line"></span>
       Retour
     </button>
   </div>
 
-<!-- BOUTON TUTORIEL -->
-<div class="fr-grid-row fr-grid-row--left fr-mb-2w">
-  <button id="btn-show-tuto"
-          class="fr-btn fr-btn--tertiary fr-btn--icon-left">
-    <span aria-hidden="true" class="fr-icon-information-line"></span>
-    Tutoriel
-  </button>
+  <div class="fr-col-6 fr-text--right">
+    <button id="btn-show-tuto" class="fr-btn fr-btn--secondary fr-btn--sm">
+      Tutoriel
+    </button>
+  </div>
 </div>
 
 <div class="genesis-grid">
@@ -201,17 +199,17 @@
 
 <!-- VUE TUTORIEL -->
 <div id="view-tuto" hidden>
-  <div class="fr-container fr-mt-2w">
-    <button id="btn-back-analyse" class="fr-btn fr-btn--tertiary fr-btn--icon-left">
-      <span aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-             width="1.25em" height="1.25em" style="vertical-align: middle;">
-          <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"/>
-        </svg>
-      </span>
-      Retour
-    </button>
+  <div class="fr-container">
+  <div class="fr-grid-row fr-grid-row--gutters fr-mb-2w fr-mt-2w">
+    <div class="fr-col-6">
+      <button id="btn-back-analyse" class="fr-btn fr-btn--tertiary fr-btn--icon-left fr-btn--sm">
+        <span aria-hidden="true" class="fr-icon-arrow-left-line"></span>
+        Retour
+      </button>
+    </div>
   </div>
+</div>
+
 
   <div class="fr-container fr-mt-4w">
     <h1 class="fr-h3">Comment récupérer l’entête d’un courrier électronique</h1>
@@ -634,6 +632,11 @@
   const btnGoAnalyse   = document.getElementById('btn-go-analyse');
   const btnShowTuto    = document.getElementById('btn-show-tuto');
   const btnBackAnalyse = document.getElementById('btn-back-analyse');
+  const btnBackHome = document.getElementById('btn-back-home');
+
+btnBackHome?.addEventListener('click', () => {
+  showView(viewHome);
+});
 
   function showView(target) {
     viewHome.hidden = true;
@@ -658,6 +661,7 @@
   btnBackAnalyse?.addEventListener('click', () => {
     showView(viewAnalyse);
   });
+
 </script>
 
 <footer class="genesis-credit">
