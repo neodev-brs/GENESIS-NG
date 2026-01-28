@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -17,9 +16,7 @@
     body { margin: 0; background: #fff; }
     .fr-header, .fr-header__brand { filter: none !important; }
 
-    .genesis-main {
-      padding: 2rem 0;
-    }
+    .genesis-main { padding: 2rem 0; }
 
     .genesis-grid {
       display: grid;
@@ -41,17 +38,21 @@
     }
 
     .genesis-credit {
-  position: fixed;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  color: #666;
-  opacity: 0.2;
-  pointer-events: none;
-  user-select: none;
-}
+      position: fixed;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: #666;
+      opacity: 0.2;
+      pointer-events: none;
+      user-select: none;
+    }
 
+    /* Petite aide: aligne le SVG comme dans ton exemple */
+    .btn-svg {
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -79,6 +80,7 @@
     </div>
   </div>
 </header>
+
 <!-- ACCUEIL -->
 <div id="view-home">
   <main class="genesis-main">
@@ -121,113 +123,102 @@
 
 <!-- VUE ANALYSE -->
 <div id="view-analyse" hidden>
+  <main class="genesis-main">
+    <div class="fr-container">
 
-<main class="genesis-main">
-  <div class="fr-container">
-
-    <!-- BARRE ACTIONS – IDENTIQUE AU CODE INITIAL -->
-<button>
- <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
-  <div class="fr-col">
-    <button
-      class="fr-btn fr-btn--tertiary fr-btn--icon-left"
-      id="btn-back-home">
-      <span aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             fill="currentColor" width="1.25em" height="1.25em">
-          <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
-        </svg>
-      </span>
-      Retour
-    </button>
-  </div>
-
-  <div class="fr-col fr-text--right">
-    <button id="btn-show-tuto" class="fr-btn fr-btn--secondary">
-      Tutoriel
-    </button>
-  </div>
-</div>
-
-
-<div class="genesis-grid">
-
-  <!-- GAUCHE -->
-  <section>
-    <h2 class="fr-h5">Texte à analyser</h2>
-
-    <textarea
-      id="inputText"
-      class="fr-input"
-      rows="6"
-      placeholder="Collez ici l’entête brute du courrier électronique…"></textarea>
-
-    <fieldset class="fr-fieldset fr-mt-2w">
-      <legend class="fr-fieldset__legend">
-        Types d’éléments à extraire
-      </legend>
-
-      <div class="fr-fieldset__content">
-
-        <div class="fr-checkbox-group fr-mb-1w">
-          <input type="checkbox" id="chk-ip">
-          <label for="chk-ip">Adresses IP</label>
+      <!-- BARRE ACTIONS (Retour à gauche + Tutoriel à droite, même ligne) -->
+      <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
+        <div class="fr-col">
+          <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-home">
+            <span aria-hidden="true">
+              <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                   fill="currentColor" width="1.25em" height="1.25em">
+                <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+              </svg>
+            </span>
+            Retour
+          </button>
         </div>
 
-        <div class="fr-checkbox-group">
-          <input type="checkbox" id="chk-mail">
-          <label for="chk-mail">Adresses e-mail</label>
+        <div class="fr-col fr-text--right">
+          <button id="btn-show-tuto" class="fr-btn fr-btn--secondary">
+            Tutoriel
+          </button>
         </div>
-
-        <div class="fr-checkbox-group fr-mt-1w">
-          <input type="checkbox" id="chk-agent">
-          <label for="chk-agent">Informations sur l'appareil de l'expéditeur</label>
-        </div>
-
       </div>
-    </fieldset>
 
-    <button id="btn-analyze" class="fr-btn fr-mt-2w">
-      Analyser
-    </button>
-  </section>
+      <div class="genesis-grid">
+        <!-- GAUCHE -->
+        <section>
+          <h2 class="fr-h5">Texte à analyser</h2>
 
-  <!-- DROITE -->
-  <section>
-    <h2 class="fr-h5">Résultats</h2>
-    <div id="results" class="results fr-text--sm">
-      Aucun résultat pour le moment.
+          <textarea
+            id="inputText"
+            class="fr-input"
+            rows="6"
+            placeholder="Collez ici l’entête brute du courrier électronique…"></textarea>
+
+          <fieldset class="fr-fieldset fr-mt-2w">
+            <legend class="fr-fieldset__legend">
+              Types d’éléments à extraire
+            </legend>
+
+            <div class="fr-fieldset__content">
+              <div class="fr-checkbox-group fr-mb-1w">
+                <input type="checkbox" id="chk-ip">
+                <label for="chk-ip">Adresses IP</label>
+              </div>
+
+              <div class="fr-checkbox-group">
+                <input type="checkbox" id="chk-mail">
+                <label for="chk-mail">Adresses e-mail</label>
+              </div>
+
+              <div class="fr-checkbox-group fr-mt-1w">
+                <input type="checkbox" id="chk-agent">
+                <label for="chk-agent">Informations sur l'appareil de l'expéditeur</label>
+              </div>
+            </div>
+          </fieldset>
+
+          <button id="btn-analyze" class="fr-btn fr-mt-2w">
+            Analyser
+          </button>
+        </section>
+
+        <!-- DROITE -->
+        <section>
+          <h2 class="fr-h5">Résultats</h2>
+          <div id="results" class="results fr-text--sm">
+            Aucun résultat pour le moment.
+          </div>
+        </section>
+      </div>
+
     </div>
-  </section>
-
-</div>
-</div>
-</main>
-
+  </main>
 </div>
 
 <!-- VUE TUTORIEL -->
 <div id="view-tuto" hidden>
+  <main class="genesis-main">
+    <div class="fr-container">
 
- <main class="genesis-main">
-  <div class="fr-container">
-
-    <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
-      <div class="fr-col">
-        <button
-          class="fr-btn fr-btn--tertiary fr-btn--icon-left"
-          id="btn-back-analyse">
-          <span aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                 fill="currentColor" width="1.25em" height="1.25em">
-              <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
-            </svg>
-          </span>
-          Retour
-        </button>
+      <!-- BARRE ACTIONS (même hauteur/structure que sur Analyse) -->
+      <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
+        <div class="fr-col">
+          <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-analyse">
+            <span aria-hidden="true">
+              <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                   fill="currentColor" width="1.25em" height="1.25em">
+                <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+              </svg>
+            </span>
+            Retour
+          </button>
+        </div>
+        <div class="fr-col"></div>
       </div>
-    </div>
-
 
       <!-- CONTENU TUTO -->
       <div class="fr-mt-4w">
@@ -255,7 +246,6 @@
 
     </div>
   </main>
-
 </div>
 
 <!-- DSFR JS -->
@@ -266,7 +256,7 @@
 <script>
   function decodeQuotedPrintable(text) {
     return text
-      .replace(/=\r?\n/g, '') // soft line breaks
+      .replace(/=\r?\n/g, '')
       .replace(/=([A-F0-9]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
   }
 
@@ -276,8 +266,8 @@
     if (ip.includes(':')) {
       const lower = ip.toLowerCase();
       if (lower === '::1') return false;
-      if (lower.startsWith('fe80:')) return false;          // link-local
-      if (lower.startsWith('fc') || lower.startsWith('fd')) return false; // ULA
+      if (lower.startsWith('fe80:')) return false;
+      if (lower.startsWith('fc') || lower.startsWith('fd')) return false;
       return true;
     }
 
@@ -567,6 +557,7 @@
 
     if (wantIP) {
       const allIPs = extractIPsFromHeaders(text);
+
       const publicIPs = allIPs.filter(isPublicIP);
       const technicalIPs = allIPs.filter(ip => !isPublicIP(ip));
 
@@ -646,7 +637,7 @@
   });
 </script>
 
-<!-- SCRIPT NAVIGATION) -->
+<!-- SCRIPT NAVIGATION -->
 <script>
   const viewHome    = document.getElementById('view-home');
   const viewAnalyse = document.getElementById('view-analyse');
@@ -655,11 +646,7 @@
   const btnGoAnalyse   = document.getElementById('btn-go-analyse');
   const btnShowTuto    = document.getElementById('btn-show-tuto');
   const btnBackAnalyse = document.getElementById('btn-back-analyse');
-  const btnBackHome = document.getElementById('btn-back-home');
-
-btnBackHome?.addEventListener('click', () => {
-  showView(viewHome);
-});
+  const btnBackHome    = document.getElementById('btn-back-home');
 
   function showView(target) {
     viewHome.hidden = true;
@@ -671,20 +658,16 @@ btnBackHome?.addEventListener('click', () => {
   }
 
   // Accueil → Analyse
-  btnGoAnalyse?.addEventListener('click', () => {
-    showView(viewAnalyse);
-  });
+  btnGoAnalyse?.addEventListener('click', () => showView(viewAnalyse));
 
   // Analyse → Tutoriel
-  btnShowTuto?.addEventListener('click', () => {
-    showView(viewTuto);
-  });
+  btnShowTuto?.addEventListener('click', () => showView(viewTuto));
 
   // Tutoriel → Analyse
-  btnBackAnalyse?.addEventListener('click', () => {
-    showView(viewAnalyse);
-  });
+  btnBackAnalyse?.addEventListener('click', () => showView(viewAnalyse));
 
+  // Analyse → Accueil
+  btnBackHome?.addEventListener('click', () => showView(viewHome));
 </script>
 
 <footer class="genesis-credit">
@@ -693,4 +676,3 @@ btnBackHome?.addEventListener('click', () => {
 
 </body>
 </html>
-
