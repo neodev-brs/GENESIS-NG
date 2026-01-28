@@ -135,32 +135,49 @@
           </p>
 
           <div class="fr-grid-row fr-grid-row--gutters">
-            <!-- Bouton Entête (fonctionnel) -->
-            <div class="fr-col-12 fr-col-md-6">
-              <button id="btn-go-analyse" class="fr-btn fr-btn--lg fr-btn--icon-left fr-icon-mail-line fr-btn--secondary fr-btn--block">
-                Entête de mail
-              </button>
-              <p class="fr-text--sm fr-mt-1w">
-                Extraction d’IP, e-mails et informations sur l’appareil expéditeur.
-              </p>
-            </div>
 
-            <!-- Bouton Réquisition (à venir) -->
-            <div class="fr-col-12 fr-col-md-6">
-              <button id="btn-go-req" class="fr-btn fr-btn--lg fr-btn--icon-left fr-icon-file-text-line fr-btn--block" disabled>
-                Résultat réquisition
-              </button>
-              <p class="fr-text--sm fr-mt-1w">
-                Module V2 : extraction depuis ODT/CSV (mail, IP, téléphone, adresses…).
-              </p>
-              <p class="fr-hint-text">Disponible prochainement.</p>
-            </div>
+  <!-- CARTE 1 : Entête de mail -->
+  <div class="fr-col-12 fr-col-md-6">
+    <div class="fr-card fr-enlarge-link">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a href="#" id="btn-go-analyse">Entête de mail</a>
+          </h3>
+
+          <p class="fr-card__desc">
+            Extraction d’IP, e-mails et informations sur l’appareil expéditeur.
+          </p>
+
+          <div class="fr-card__end">
+            <p class="fr-card__detail fr-icon-arrow-right-line">Ouvrir le module</p>
           </div>
-
         </div>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- CARTE 2 : Résultat réquisition (désactivée) -->
+  <div class="fr-col-12 fr-col-md-6">
+    <div class="fr-card fr-enlarge-link" aria-disabled="true">
+      <div class="fr-card__body">
+        <div class="fr-card__content">
+          <h3 class="fr-card__title">
+            <a href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">Résultat réquisition</a>
+          </h3>
+
+          <p class="fr-card__desc">
+            Module V2 : extraction depuis ODT/CSV (mail, IP, téléphone, adresses…).
+          </p>
+
+          <div class="fr-card__end">
+            <p class="fr-card__detail fr-icon-lock-line">Disponible prochainement</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- VUE ANALYSE -->
@@ -685,10 +702,11 @@
   const viewAnalyse = document.getElementById('view-analyse');
   const viewTuto    = document.getElementById('view-tuto');
 
-  const btnGoAnalyse   = document.getElementById('btn-go-analyse');
-  const btnShowTuto    = document.getElementById('btn-show-tuto');
-  const btnBackAnalyse = document.getElementById('btn-back-analyse');
-  const btnBackHome    = document.getElementById('btn-back-home');
+  const btnGoAnalyse   = document.getElementById('btn-go-analyse'); // <a>
+  const btnGoReq       = document.getElementById('btn-go-req');     // <a> (carte V2)
+  const btnShowTuto    = document.getElementById('btn-show-tuto');  // <button>
+  const btnBackAnalyse = document.getElementById('btn-back-analyse'); // <button>
+  const btnBackHome    = document.getElementById('btn-back-home');    // <button>
 
   function showView(target) {
     viewHome.hidden = true;
@@ -699,8 +717,16 @@
     window.scrollTo(0, 0);
   }
 
-  // Accueil → Analyse
-  btnGoAnalyse?.addEventListener('click', () => showView(viewAnalyse));
+  // Accueil → Analyse (carte cliquable)
+  btnGoAnalyse?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showView(viewAnalyse);
+  });
+
+  // Accueil → Réquisition (désactivée => on bloque juste le clic)
+  btnGoReq?.addEventListener('click', (e) => {
+    e.preventDefault();
+  });
 
   // Analyse → Tutoriel
   btnShowTuto?.addEventListener('click', () => showView(viewTuto));
