@@ -125,6 +125,22 @@
 <main class="genesis-main">
   <div class="fr-container">
 
+    <!-- BOUTON RETOUR VERS ACCUEIL -->
+<div class="fr-grid-row fr-grid-row--gutters fr-mb-2w">
+  <div class="fr-col-6">
+    <button id="btn-back-home" class="fr-btn fr-btn--tertiary fr-btn--icon-left">
+      <span aria-hidden="true" class="fr-icon-arrow-left-line"></span>
+      Retour
+    </button>
+  </div>
+
+  <div class="fr-col-6 fr-text--right">
+    <button id="btn-tuto" class="fr-btn fr-btn--secondary">
+      Tutoriel
+    </button>
+  </div>
+</div>
+
 <!-- BOUTON TUTORIEL -->
 <div class="fr-grid-row fr-grid-row--right fr-mb-2w">
   <button id="btn-tuto" class="fr-btn fr-btn--secondary">
@@ -614,7 +630,7 @@
   });
 </script>
 
-<!-- SCRIPT NAVIGATION (ACCUEIL / ANALYSE / TUTORIEL) -->
+<!-- SCRIPT NAVIGATION) -->
 <script>
   const viewHome    = document.getElementById('view-home');
   const viewAnalyse = document.getElementById('view-analyse');
@@ -623,6 +639,10 @@
   const btnGoAnalyse = document.getElementById('btn-go-analyse');
   const btnTuto      = document.getElementById('btn-tuto');
   const btnBack      = document.getElementById('btn-back');
+  const btnBackHome = document.getElementById('btn-back-home');
+
+if (btnBackHome) btnBackHome.addEventListener('click', () => showView(viewHome));
+
 
   function showView(target) {
     viewHome.hidden = true;
