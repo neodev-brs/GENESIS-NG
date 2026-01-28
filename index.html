@@ -202,7 +202,7 @@
 <!-- VUE TUTORIEL -->
 <div id="view-tuto" hidden>
   <div class="fr-container fr-mt-2w">
-    <button id="btn-back" class="fr-btn fr-btn--tertiary fr-btn--icon-left">
+    <button id="btn-back-analyse" class="fr-btn fr-btn--tertiary fr-btn--icon-left">
       <span aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
              width="1.25em" height="1.25em" style="vertical-align: middle;">
@@ -631,13 +631,9 @@
   const viewAnalyse = document.getElementById('view-analyse');
   const viewTuto    = document.getElementById('view-tuto');
 
-  const btnGoAnalyse = document.getElementById('btn-go-analyse');
-  const btnTuto      = document.getElementById('btn-tuto');
-  const btnBack      = document.getElementById('btn-back');
-  const btnBackHome = document.getElementById('btn-back-home');
-
-if (btnBackHome) btnBackHome.addEventListener('click', () => showView(viewHome));
-
+  const btnGoAnalyse   = document.getElementById('btn-go-analyse');
+  const btnShowTuto    = document.getElementById('btn-show-tuto');
+  const btnBackAnalyse = document.getElementById('btn-back-analyse');
 
   function showView(target) {
     viewHome.hidden = true;
@@ -649,13 +645,19 @@ if (btnBackHome) btnBackHome.addEventListener('click', () => showView(viewHome))
   }
 
   // Accueil → Analyse
-  btnGoAnalyse.addEventListener('click', () => showView(viewAnalyse));
+  btnGoAnalyse?.addEventListener('click', () => {
+    showView(viewAnalyse);
+  });
 
   // Analyse → Tutoriel
-  btnTuto.addEventListener('click', () => showView(viewTuto));
+  btnShowTuto?.addEventListener('click', () => {
+    showView(viewTuto);
+  });
 
   // Tutoriel → Analyse
-  btnBack.addEventListener('click', () => showView(viewAnalyse));
+  btnBackAnalyse?.addEventListener('click', () => {
+    showView(viewAnalyse);
+  });
 </script>
 
 <footer class="genesis-credit">
