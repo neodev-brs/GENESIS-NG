@@ -78,6 +78,23 @@
     .btn-svg {
       vertical-align: middle;
     }
+
+    /* Alignement vertical icône + texte dans les boutons Retour */
+.fr-btn.fr-btn--icon-left {
+  display: inline-flex;      /* sécurité */
+  align-items: center;       /* centre verticalement */
+  gap: 0.5rem;               /* espace icône/texte (ajuste si tu veux) */
+}
+
+.fr-btn.fr-btn--icon-left > span[aria-hidden="true"] {
+  display: inline-flex;      /* évite le “baseline” */
+  align-items: center;
+}
+
+.fr-btn.fr-btn--icon-left svg {
+  display: block;            /* supprime les décalages baseline */
+}
+
   </style>
 </head>
 
