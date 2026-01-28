@@ -29,6 +29,20 @@
   margin-left: auto;
 }
 
+/* Barre actions alignée EXACTEMENT sur les colonnes Texte/Résultats */
+.genesis-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;              /* même gap que .genesis-grid */
+  align-items: center;
+  margin-bottom: 2rem;    /* équivalent à fr-mb-2w */
+}
+
+.genesis-actions-right {
+  display: flex;
+  justify-content: flex-end; /* colle le bouton à droite */
+}
+
     textarea {
       min-height: 360px;
       font-family: monospace;
@@ -132,13 +146,9 @@
     <div class="fr-container">
 
       <!-- BARRE ACTIONS (alignée sur les 2 colonnes de la grille) -->
-<div class="fr-grid-row fr-grid-row--gutters fr-mb-2w fr-grid-row--middle">
-
-  <!-- Colonne gauche (alignée avec Texte à analyser) -->
-  <div class="fr-col-12 fr-col-md-6">
-    <button
-      class="fr-btn fr-btn--tertiary fr-btn--icon-left"
-      id="btn-back-home">
+<div class="genesis-actions">
+  <div>
+    <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-home">
       <span aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
              fill="currentColor" width="1.25em" height="1.25em">
@@ -149,15 +159,11 @@
     </button>
   </div>
 
-  <!-- Colonne droite (alignée avec Résultats) -->
-  <div class="fr-col-12 fr-col-md-6 fr-text--right">
-    <button
-      id="btn-show-tuto"
-      class="fr-btn fr-btn--secondary">
+  <div class="genesis-actions-right">
+    <button id="btn-show-tuto" class="fr-btn fr-btn--secondary">
       Tutoriel
     </button>
   </div>
-
 </div>
 
       <div class="genesis-grid">
