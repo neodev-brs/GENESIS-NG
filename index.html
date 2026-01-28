@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>GENESIS – Outil d'analyse des entêtes de courrier électroniques</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://www.interieur.gouv.fr/themes/custom/dsfr/src/images/logo/favicon.png">
+
+  <!-- DSFR -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/dsfr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/utility/utilities.min.css">
+
+  <style>
+    body { margin: 0; background: #fff; }
+    .fr-header, .fr-header__brand { filter: none !important; }
+
+    .genesis-main {
+      padding: 2rem 0;
+    }
+
+    .genesis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    textarea {
+      min-height: 360px;
+      font-family: monospace;
+    }
+
+    .results {
+      min-height: 360px;
+      padding: 1rem;
+      border: 1px solid var(--border-default-grey);
+      background: var(--background-alt-grey);
+      overflow-y: auto;
+    }
+
+    .genesis-credit {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: #666;
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+}
+
+  </style>
+</head>
+
+<body>
+
+<!-- HEADER OFFICIEL -->
+<header role="banner" class="fr-header">
+  <div class="fr-header__body">
+    <div class="fr-container">
+      <div class="fr-header__body-row">
+        <div class="fr-header__brand fr-enlarge-link">
+          <div class="fr-header__brand-top">
+            <div class="fr-header__logo">
+              <p class="fr-logo">Ministère<br>de l’Intérieur</p>
+            </div>
+          </div>
+          <div class="fr-header__service">
+            <p class="fr-header__service-title">GENESIS</p>
+            <p class="fr-header__service-tagline">
+              Outil d’analyse des entêtes de courriers électroniques
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- VUE ANALYSE -->
+<div id="view-analyse">
+
+<main class="genesis-main">
+  <div class="fr-container">
+
+<!-- BOUTON TUTORIEL -->
+<div class="fr-grid-row fr-grid-row--right fr-mb-2w">
+  <button id="btn-tuto" class="fr-btn fr-btn--secondary">
+    Tutoriel
+  </button>
+</div>
+
+<div class="genesis-grid">
+
+  <!-- GAUCHE -->
+  <section>
+    <h2 class="fr-h5">Texte à analyser</h2>
+
+    <textarea
+      id="inputText"
+      class="fr-input"
+      rows="6"
+      placeholder="Collez ici l’entête brute du courrier électronique…"></textarea>
+
+    <fieldset class="fr-fieldset fr-mt-2w">
+      <legend class="fr-fieldset__legend">
+        Types d’éléments à extraire
+      </legend>
+
+      <div class="fr-fieldset__content">
+
+        <div class="fr-checkbox-group fr-mb-1w">
+          <input type="checkbox" id="chk-ip">
+          <label for="chk-ip">Adresses IP</label>
+        </div>
+
+        <div class="fr-checkbox-group">
+          <input type="checkbox" id="chk-mail">
+          <label for="chk-mail">Adresses e-mail</label>
+        </div>
+
+        <div class="fr-checkbox-group fr-mt-1w">
+          <input type="checkbox" id="chk-agent">
+          <label for="chk-agent">Informations sur l'appareil de l'expéditeur</label>
+        </div>
+
+      </div>
+    </fieldset>
+
+    <button id="btn-analyze" class="fr-btn fr-mt-2w">
+      Analyser
+    </button>
+  </section>
+
+  <!-- DROITE -->
+  <section>
+    <h2 class="fr-h5">Résultats</h2>
+    <div id="results" class="results fr-text--sm">
+      Aucun résultat pour le moment.
+    </div>
+  </section>
+
+</div>
+</div>
+</main>
+
+</div>
+
+<!-- VUE TUTORIEL -->
+<div id="view-tuto" hidden>
+
+  <div class="fr-container fr-mt-2w">
+  <button
+    id="btn-back"
+    class="fr-btn fr-btn--tertiary fr-btn--icon-left">
+
+    <span aria-hidden="true">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width="1.25em"
+        height="1.25em"
+        style="vertical-align: middle;"
+      >
+        <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"/>
+      </svg>
+    </span>
+
+    Retour
+  </button>
+</div>
+
+  <div class="fr-container fr-mt-4w">
+    <h1 class="fr-h3">Comment récupérer l’entête d’un courrier électronique</h1>
+
+    <p>
+      Pour analyser un message, GENESIS a besoin de son <strong>entête complète</strong>.
+    </p>
+
+    <ol class="fr-mt-2w">
+      <li>Ouvrez le courrier électronique avec l'application "Messagerie Thunderbird"</li>
+      <li>Utilisez le raccourci <strong>Ctrl + U</strong></li>
+      <li>Copiez l’intégralité du contenu affiché</li>
+      <li>Revenez sur GENESIS</li>
+      <li>Collez le contenu dans le champ « Texte à analyser »</li>
+    </ol>
+
+    <p>
+      Il faut bien récupérer le courrier inital sur l'appareil de la victime. Si vous transférez le message sur votre boîte professionelle, les données seront modifiées. Vous pouvez au choix :
+    </p>
+
+      <ol class="fr-mt-2w">
+      <li>Ou copier le code source depuis l'appareil de la victime, en affichant l'entête du courrier électronique via le bouton menu "...".</li>
+      <li>Ou télécharger le courrier sur l'appareil de la victime via le bouton "télécharger" de sa messagerie (format .eml), avant de vous l'envoyer.</li>
+    </ol>
+
+  </div>
+
+</div>
+
+<!-- DSFR JS -->
+<script src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/dsfr.module.min.js" type="module"></script>
+<script src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/dsfr.nomodule.min.js" nomodule></script>
+
+<!-- SCRIPT PRINCIPAL -->
+<script>
+  function decodeQuotedPrintable(text) {
+    return text
+      .replace(/=\r?\n/g, '') // soft line breaks
+      .replace(/=([A-F0-9]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  }
+
+  const REGEX_MAIL = /\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g;
+
+  // FILTRES TECHNIQUES (ADRESSES TECHNIQUES ET IPs TECHNIQUES)
+
+  function isPublicIP(ip) {
+    // IPv6 ?
+    if (ip.includes(':')) {
+      const lower = ip.toLowerCase();
+
+      // loopback
+      if (lower === '::1') return false;
+      if (lower.startsWith('fe80:')) return false;          // link-local
+      if (lower.startsWith('fc') || lower.startsWith('fd')) return false; // ULA fc00::/7
+
+      return true;
+    }
+
+    // IPv4
+    if (
+      ip.startsWith('10.') ||
+      ip.startsWith('127.') ||
+      ip.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip) ||
+      ip === '0.0.0.0'
+    ) return false;
+
+    return true;
+  }
+
+ function isHumanEmail(email) {
+  const e = email.trim();
+
+  // DECOUPAGE
+  const at = e.lastIndexOf('@');
+  if (at === -1) return false;
+
+  const local = e.slice(0, at);
+  const domain = e.slice(at + 1);
+
+  // ECHANTILLON DE PATTERNS TECHNIQUES
+  const technicalPatterns = [
+    /^[a-f0-9-]{32,}@/i,                  // UUID/GUID longs
+    /^[a-f0-9-]{20,}@/i,
+    /^[a-z0-9]{16,}@/i,                   // hash brut
+    /^[a-z]@/i,                           // e@domaine
+    /^mailer-daemon@/i,
+    /^postmaster@/i,
+    /^no-?reply@/i,
+    /^\d+(?:\.\d+){2,}\.JavaMail\./i,     // JAVAMAIL
+    /JavaMail/i                           // JAVA
+  ];
+
+  if (technicalPatterns.some(re => re.test(e))) return false;
+
+  // HEURISTIQUE (LONGS CHIFFRES)
+  const letters = (local.match(/[a-zA-Z]/g) || []).length;
+  const digits  = (local.match(/[0-9]/g) || []).length;
+  const dots    = (local.match(/\./g) || []).length;
+
+  const len = local.length;
+
+  if (letters === 0 && dots >= 2 && digits >= 10) return false;
+
+  if (len >= 25 && digits / Math.max(1, len) > 0.7) return false;
+
+  return true;
+}
+
+  // HORODATAGE LAST RECEIVED
+
+  function extractLastReceivedUTC(text) {
+    const lines = text.split(/\r?\n/);
+    let receivedBlocks = [];
+    let current = null;
+
+    for (const line of lines) {
+      if (/^Received:/i.test(line)) {
+        if (current) receivedBlocks.push(current);
+        current = line;
+      } else if (current && /^\s+/.test(line)) {
+        current += ' ' + line.trim();
+      } else {
+        if (current) {
+          receivedBlocks.push(current);
+          current = null;
+        }
+      }
+    }
+    if (current) receivedBlocks.push(current);
+    if (!receivedBlocks.length) return null;
+
+    const lastReceived = receivedBlocks[receivedBlocks.length - 1];
+    const dateMatch = lastReceived.match(/;\s*(.+)$/);
+    if (!dateMatch) return null;
+
+    const date = new Date(dateMatch[1]);
+    if (isNaN(date.getTime())) return null;
+
+    return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
+  }
+
+  // EXTRACTION IP
+
+  function getHeaderLinesForIPScan(text) {
+    const lines = text.split(/\r?\n/);
+
+    // RECONSTRUCTION MULTI-LIGNES (SI SI DONNEE DECOUPEE PAR LE SIGNE "=")
+    const blocks = [];
+    let current = null;
+
+    for (const line of lines) {
+      if (/^(Received|X-Received):/i.test(line)) {
+        if (current) blocks.push(current);
+        current = line;
+     } else if (current && /^\s+/.test(line)) {
+  const cont = line.trim();
+
+  const end = current.slice(-1);
+  const start = cont.charAt(0);
+
+  const ipLikeEnd = /[0-9A-Fa-f\.\:\[\]]/.test(end);
+  const ipLikeStart = /[0-9A-Fa-f\.\:\[\]]/.test(start);
+
+  current += (ipLikeEnd && ipLikeStart) ? cont : (' ' + cont);
+
+      } else {
+        if (current) {
+          blocks.push(current);
+          current = null;
+        }
+      }
+    }
+    if (current) blocks.push(current);
+
+    const wantedSingles = lines.filter(l =>
+      /^(Authentication-Results|Received-SPF|ARC-Authentication-Results|X-Originating-IP|X-Forwarded-For|X-Client-IP|Client-IP|X-Source-IP|X-Sender-IP|X-Remote-IP|X-Mailer):/i.test(l)
+    );
+
+    return [...blocks, ...wantedSingles];
+  }
+
+function extractIPv4FromText(s) {
+  const out = [];
+
+  const re = /(^|[^0-9.])((?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3})(?=$|[^0-9.])/g;
+
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    out.push(m[2]);
+  }
+
+  return out;
+}
+
+  function extractIPv6WithOptionalPortFromText(s) {
+    const out = [];
+
+    const bracket = /\[(?:IPv6:)?([0-9a-fA-F:]{2,})\](?::(\d{1,5}))?/g;
+    let m;
+    while ((m = bracket.exec(s)) !== null) {
+      const addr = m[1];
+      const port = m[2];
+      if (!isLikelyIPv6(addr)) continue;
+      out.push(port ? `${addr}:${port}` : addr);
+    }
+
+    const naked = /(^|[^0-9A-Fa-f:])([0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){2,7}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7})(?=$|[^0-9A-Fa-f:])/g;
+    while ((m = naked.exec(s)) !== null) {
+      const addr = m[2];
+      if (!isLikelyIPv6(addr)) continue;
+      out.push(addr);
+    }
+
+    return out;
+  }
+
+  function isLikelyIPv6(v) {
+    // EXCLUT HH:MM:SS
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(v)) return false;
+    // EXCLUT chaînes que numériques + :
+    if (/^[0-9:]+$/.test(v)) return false;
+    // AVEC AU MOINS 2 ":"
+    if ((v.match(/:/g) || []).length < 2) return false;
+    return true;
+  }
+
+function getHeaderSection(text) {
+  const parts = text.split(/\r?\n\r?\n/);
+  return parts[0] || text;
+}
+
+function removeTruncatedIPv4(list) {
+  const ipv4 = list.filter(x => !x.includes(':'));
+  const others = new Set(ipv4);
+
+  return list.filter(ip => {
+    if (ip.includes(':')) return true;
+
+    for (const full of others) {
+      if (full === ip) continue;
+
+      if (full.length > ip.length && full.endsWith(ip)) {
+        const idx = full.length - ip.length - 1; 
+        if (idx >= 0 && /[0-9]/.test(full[idx])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+}
+
+function normalizeIPv6(v) {
+  return (v || '').toLowerCase().replace(/^\[|\]$/g, '');
+}
+
+function removeTruncatedIPv6(list) {
+  const ipv6 = list
+    .filter(x => x.includes(':'))
+    .map(normalizeIPv6);
+
+  const normalizedToOriginals = new Map();
+  for (const ip of list) {
+    const n = normalizeIPv6(ip);
+    if (!normalizedToOriginals.has(n)) normalizedToOriginals.set(n, []);
+    normalizedToOriginals.get(n).push(ip);
+  }
+
+  const keep = new Set(ipv6);
+
+  for (const a of ipv6) {
+    for (const b of ipv6) {
+      if (a === b) continue;
+
+      if (b.length > a.length && b.endsWith(a)) {
+        const idx = b.length - a.length - 1;
+        const prev = idx >= 0 ? b[idx] : '';
+        if (/[0-9a-f]/i.test(prev)) {
+          keep.delete(a);
+        }
+      }
+    }
+  }
+
+  return list.filter(ip => {
+    if (!ip.includes(':')) return true;
+    return keep.has(normalizeIPv6(ip));
+  });
+}
+
+  function extractIPsFromHeaders(text) {
+  const headerText = getHeaderSection(text);
+  const linesToScan = getHeaderLinesForIPScan(headerText);
+
+  let found = [];
+
+  for (const line of linesToScan) {
+    found.push(...extractIPv4FromText(line));
+    found.push(...extractIPv6WithOptionalPortFromText(line));
+  }
+
+  found = removeTruncatedIPv4(found);
+  found = removeTruncatedIPv6(found);
+
+return found;
+
+
+  return found;
+}
+
+  // USER-AGENT OU X-MAILER
+
+ function extractUserAgentInfo(text) {
+  const lines = text.split(/\r?\n/);
+
+  const mimeLine = lines.find(l => /^mime-version:/i.test(l));
+  const xMailerLine = lines.find(l => /^x-mailer:/i.test(l));
+  const uaLine = lines.find(l => /^user-agent:/i.test(l) || /^x-user-agent:/i.test(l));
+
+  let value = '';
+  if (mimeLine && /\(.*\)/.test(mimeLine)) value = mimeLine.match(/\((.*)\)/)[1];
+  else if (xMailerLine) value = xMailerLine.split(':').slice(1).join(':').trim();
+  else if (uaLine) value = uaLine.split(':').slice(1).join(':').trim();
+
+  // ✅ Fallback “signatures” (Outlook mobile, etc.)
+  if (!value) {
+    const full = text; // on autorise le scan global
+    if (/envoy[eé]\s+à\s+partir\s+de\s+outlook\s+pour\s+ios/i.test(full) || /sent from outlook for ios/i.test(full)) {
+      return { raw: 'Outlook pour iOS', os: 'iOS (Apple)', app: 'Microsoft Outlook', version: '' };
+    }
+    if (/envoy[eé]\s+à\s+partir\s+de\s+outlook\s+pour\s+android/i.test(full) || /sent from outlook for android/i.test(full)) {
+      return { raw: 'Outlook pour Android', os: 'Android', app: 'Microsoft Outlook', version: '' };
+    }
+    return null;
+  }
+
+  let os = 'Inconnu';
+  let app = 'Inconnue';
+  let version = '';
+
+  if (/outlook\s+pour\s+ios/i.test(value)) {
+    os = 'iOS (Apple)';
+    app = 'Microsoft Outlook';
+  } else if (/outlook\s+pour\s+android/i.test(value)) {
+    os = 'Android';
+    app = 'Microsoft Outlook';
+  } else if (/outlook/i.test(value)) {
+    os = 'Windows';
+    app = 'Microsoft Outlook';
+    const v = value.match(/outlook[\s\/]?([\d.]+)/i);
+    if (v) version = v[1];
+  } else if (/mac os x mail/i.test(value) || /apple mail/i.test(value)) {
+    os = 'macOS (Apple)';
+    app = 'Apple Mail';
+    const v = value.match(/mail\s([\d.]+)/i);
+    if (v) version = v[1];
+  } else if (/thunderbird\/([\d.]+)/i.test(value)) {
+    app = 'Mozilla Thunderbird';
+    version = value.match(/thunderbird\/([\d.]+)/i)[1];
+    if (/windows/i.test(value)) os = 'Windows';
+    else if (/mac os x|macintosh/i.test(value)) os = 'macOS';
+    else if (/linux/i.test(value)) os = 'Linux';
+  }
+
+  return { raw: value, os, app, version };
+}
+
+  // BOUTON ANALYSER
+
+  document.getElementById('btn-analyze').addEventListener('click', () => {
+    const rawText = document.getElementById('inputText').value;
+    const text = decodeQuotedPrintable(rawText);
+
+    const wantIP = document.getElementById('chk-ip').checked;
+    const wantMail = document.getElementById('chk-mail').checked;
+    const wantAgent = document.getElementById('chk-agent').checked;
+
+    const output = document.getElementById('results');
+    output.innerHTML = '';
+
+    if (!wantIP && !wantMail && !wantAgent) {
+      output.textContent = 'Sélectionnez au moins un type d’analyse.';
+      return;
+    }
+
+    if ((wantIP || wantMail || wantAgent) && !text.trim()) {
+      output.textContent = 'Veuillez coller une entête avant de lancer l’analyse.';
+      return;
+    }
+
+    const blocks = [];
+
+    if (wantIP) {
+      const allIPs = extractIPsFromHeaders(text);
+
+      const publicIPs = allIPs.filter(isPublicIP);
+      const technicalIPs = allIPs.filter(ip => !isPublicIP(ip));
+
+      const uniqPublic = [...new Set(publicIPs)].sort();
+      const uniqTech = [...new Set(technicalIPs)].sort();
+
+      const dateUTC = extractLastReceivedUTC(text) || 'Horodatage non trouvé';
+
+      let html = `
+        <strong>Adresses IP (${uniqPublic.length})</strong><br>
+        <div class="fr-mb-1w fr-text--sm">Horodatage : ${dateUTC}</div>
+        <br>
+      `;
+
+      html += uniqPublic.length
+        ? uniqPublic.map(ip => `• ${ip}`).join('<br>')
+        : 'Aucune adresse IP publique trouvée';
+
+      if (uniqTech.length) {
+        html += `
+          <details class="fr-mt-2w">
+            <summary>Voir les résultats techniques (${uniqTech.length})</summary>
+            <div class="fr-mt-1w fr-text--sm">
+              ${uniqTech.map(ip => `• ${ip}`).join('<br>')}
+            </div>
+          </details>
+        `;
+      }
+
+      blocks.push(html);
+    }
+
+    if (wantMail) {
+      const allMails = text.match(REGEX_MAIL) || [];
+
+      const humanMails = allMails.filter(isHumanEmail);
+      const technicalMails = allMails.filter(m => !isHumanEmail(m));
+
+      const uniqHuman = [...new Set(humanMails)].sort();
+      const uniqTech = [...new Set(technicalMails)].sort();
+
+      let html = `<strong>Adresses e-mail (${uniqHuman.length})</strong><br><br>`;
+
+      html += uniqHuman.length ? uniqHuman.join('<br>') : 'Aucune adresse e-mail pertinente trouvée';
+
+      if (uniqTech.length) {
+        html += `
+          <details class="fr-mt-2w">
+            <summary>Voir les résultats techniques (${uniqTech.length})</summary>
+            <div class="fr-mt-1w fr-text--sm">
+              ${uniqTech.join('<br>')}
+            </div>
+          </details>
+        `;
+      }
+
+      blocks.push(html);
+    }
+
+    if (wantAgent) {
+      const agentInfo = extractUserAgentInfo(text);
+
+      if (!agentInfo) {
+        blocks.push(`<strong>Appareil utilisé et application de l'expéditeur</strong><br>Aucune information trouvée`);
+      } else {
+        blocks.push(
+          `<strong>Appareil utilisé et application de l'expéditeur</strong><br>
+          <ul>
+            <li><strong>Système :</strong> ${agentInfo.os}</li>
+            <li><strong>Application :</strong> ${agentInfo.app}</li>
+            ${agentInfo.version ? `<li><strong>Version :</strong> ${agentInfo.version}</li>` : ''}
+            <li><strong>Chaîne brute : </strong><code>${agentInfo.raw}</code></li>
+          </ul>`
+        );
+      }
+    }
+
+    output.innerHTML = blocks.join('<br><br>');
+  });
+</script>
+
+<!-- SCRIPT TUTORIEL -->
+<script>
+  const viewAnalyse = document.getElementById('view-analyse');
+  const viewTuto = document.getElementById('view-tuto');
+  const btnTuto = document.getElementById('btn-tuto');
+  const btnBack = document.getElementById('btn-back');
+
+  btnTuto.addEventListener('click', () => {
+    viewAnalyse.hidden = true;
+    viewTuto.hidden = false;
+    window.scrollTo(0, 0);
+  });
+
+  btnBack.addEventListener('click', () => {
+    viewTuto.hidden = true;
+    viewAnalyse.hidden = false;
+    window.scrollTo(0, 0);
+  });
+</script>
+
+<footer class="genesis-credit">
+  GENESIS 2026 - MDC HUGO BRES--MALANCHERE - DEMO ADI 2026
+</footer>
+
+</body>
+</html>
