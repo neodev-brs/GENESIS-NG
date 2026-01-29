@@ -122,34 +122,6 @@
   pointer-events: none;
 }
 
-/* Grille checkbox : 2 colonnes parfaitement alignées */
-.genesis-check-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 2rem;     /* espace entre colonnes */
-  row-gap: 0.5rem;      /* espace entre lignes (resserré) */
-  align-items: start;
-}
-
-/* chaque item prend toute la largeur de sa cellule => même alignement X */
-.genesis-check-grid .fr-checkbox-group{
-  margin: 0;
-  width: 100%;
-}
-
-/* optionnel : compacter encore un peu l’ensemble */
-.genesis-check-grid .fr-checkbox-group label{
-  line-height: 1.2;
-}
-
-/* Mobile : 1 colonne */
-@media (max-width: 48em){
-  .genesis-check-grid{
-    grid-template-columns: 1fr;
-    column-gap: 0;
-  }
-}
-
   </style>
 </head>
 
@@ -400,27 +372,25 @@
               Types d’éléments à extraire
             </legend>
 
-            <div class="fr-fieldset__content">
-  <div class="genesis-check-grid">
-    <div class="fr-checkbox-group">
-      <input type="checkbox" id="req-chk-mail">
-      <label for="req-chk-mail">Adresse e-mail</label>
-    </div>
+           <div class="fr-fieldset__content">
+  <div class="fr-checkbox-group fr-mb-1w">
+    <input type="checkbox" id="req-chk-mail">
+    <label for="req-chk-mail">Adresse e-mail</label>
+  </div>
 
-    <div class="fr-checkbox-group">
-      <input type="checkbox" id="req-chk-ip">
-      <label for="req-chk-ip">Adresse IP</label>
-    </div>
+  <div class="fr-checkbox-group fr-mb-1w">
+    <input type="checkbox" id="req-chk-ip">
+    <label for="req-chk-ip">Adresse IP</label>
+  </div>
 
-    <div class="fr-checkbox-group">
-      <input type="checkbox" id="req-chk-postal">
-      <label for="req-chk-postal">Adresse postale</label>
-    </div>
+  <div class="fr-checkbox-group fr-mb-1w">
+    <input type="checkbox" id="req-chk-postal">
+    <label for="req-chk-postal">Adresse postale</label>
+  </div>
 
-    <div class="fr-checkbox-group">
-      <input type="checkbox" id="req-chk-phone">
-      <label for="req-chk-phone">Téléphone</label>
-    </div>
+  <div class="fr-checkbox-group">
+    <input type="checkbox" id="req-chk-phone">
+    <label for="req-chk-phone">Téléphone</label>
   </div>
 </div>
 
