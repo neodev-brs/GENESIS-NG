@@ -126,7 +126,7 @@
   gap: 0.5rem;           /* espace badge / texte */
 }
 
-/* Badge plus discret (DSFR-compatible) */
+/* Badge plus discret, sans impacter le layout */
 .fr-badge--sm {
   font-size: 0.65rem;
   line-height: 1;
@@ -218,35 +218,34 @@
     <div class="fr-card__body">
       <div class="fr-card__content">
 
-  <div class="card-title-row">
-    <p class="fr-badge fr-badge--warning fr-badge--icon-lightning-line fr-badge--sm">
-      NOUVEAU
-    </p>
+  <!-- Badge AU-DESSUS -->
+  <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v">
+    Nouveau
+  </p>
 
-    <h3 class="fr-card__title">
-      <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
-        Résultat de réquisition
-      </a>
-    </h3>
-  </div>
+  <!-- Titre pleine largeur -->
+  <h3 class="fr-card__title">
+    <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
+      Résultat de réquisition
+    </a>
+  </h3>
+
+  <p class="fr-text--sm fr-mt-2v">
+    Formats : ".pdf, .odt, .calc, .csv, .txt…"
+  </p>
 
   <p class="fr-card__desc">
     Extraction depuis un résultat de réquisition
     (mail, IP, téléphone, adresse…)
   </p>
 
-  <p class="fr-text--sm fr-mt-2v">
-    Formats : "".pdf, .odt, .calc, .csv, .txt…"
-  </p>
-
   <div class="fr-card__end">
-    <p class="fr-card__detail fr-icon-lock-line">
+    <p class="fr-card__detail">
       Ouvrir le module
     </p>
   </div>
 
 </div>
-
 
           </div> <!-- .fr-grid-row fr-grid-row--gutters -->
         </div>   <!-- .fr-col-12 ... -->
