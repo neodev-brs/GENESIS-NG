@@ -996,27 +996,56 @@
     blocks.push(html);
   }
 
-  // TELEPHONE
-  if (wantPhone) {
-    const phonesRaw = text.match(REGEX_PHONE) || [];
-    const phones = phonesRaw
-      .map(normalizePhone)
-      .filter(p => p.length >= 9); // filtre léger
+  // TELEPHONE (FR -> xx.xx.xx.xx.xx)
+if (wantPhone) {
+  const phonesRaw = text.match(REGEX_PHONE) || [];
 
-    const uniq = [...new Set(phones)].sort();
+  const phones = phonesRaw
+    .map(normalizePhoneFRDots)
+    .filter(Boolean);
 
-    let html = `<strong>Téléphones (${uniq.length})</strong><br><br>`;
-    html += uniq.length ? uniq.map(p => `• ${p}`).join('<br>') : 'Aucun numéro trouvé';
+  const uniq = [...new Set(phones)].sort();
+
+  let html = `<strong>Téléphones (${uniq.length})</strong><br><br>`;
+  html += uniq.length ? uniq.map(p => `• ${p}`).join('<br>') : 'Aucun numéro FR valide trouvé';
+  blocks.push(html);
+}
+
+  // ADRESSE POSTALE (tableau Adresse | Ville | Code postal)
+if (wantPostal) {
+  const rows = extractPostalAddressesStructured(text);
+
+  let html = `<strong>Adresses postales (${rows.length})</strong><br><br>`;
+
+  if (!rows.length) {
+    html += 'Aucune adresse postale probable trouvée';
+    blocks.push(html);
+  } else {
+    html += `
+      <div class="fr-table fr-table--layout-fixed fr-table--no-caption">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Adresse</th>
+              <th scope="col">Ville</th>
+              <th scope="col">Code postal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td>${escapeHTML(r.adresse)}</td>
+                <td>${escapeHTML(r.ville)}</td>
+                <td>${escapeHTML(r.codePostal)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
     blocks.push(html);
   }
-
-  // ADRESSE POSTALE
-  if (wantPostal) {
-    const addresses = extractPostalAddresses(text);
-    let html = `<strong>Adresses postales (${addresses.length})</strong><br><br>`;
-    html += addresses.length ? addresses.map(a => `• ${a}`).join('<br>') : 'Aucune adresse postale probable trouvée';
-    blocks.push(html);
-  }
+}
 
   output.innerHTML = blocks.join('<br><br>');
 });
@@ -1048,12 +1077,34 @@ const REGEX_ADDRESS_LINE = new RegExp(
 /* Code postal + ville sur une ligne dédiée (utile si CP/ville est sur la ligne suivante) */
 const REGEX_CP_VILLE = /(?:^|\n)\s*(\d{5})\s+([A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})\s*(?=\n|$)/g;
 
+function escapeHTML(s) {
+  return String(s || '')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 /* Nettoyage téléphone : enlève séparateurs et garde une forme lisible */
-function normalizePhone(raw) {
-  const s = raw.trim()
-    .replace(/[^\d+]/g, '')         // garde chiffres et +
-    .replace(/^00/, '+');           // 0033 -> +33
-  return s;
+function normalizePhoneFRDots(raw) {
+  // On garde uniquement les chiffres
+  let digits = (raw || '').replace(/\D/g, '');
+
+  if (!digits) return null;
+
+  // Cas +33 / 0033 / 33xxxxxxxxx -> 0xxxxxxxxx
+  // Exemples possibles après nettoyage :
+  // "+33 6..." -> "336..."
+  // "0033 6..." -> "00336..."
+  if (digits.startsWith('0033')) digits = '33' + digits.slice(4);
+  if (digits.startsWith('33')) digits = '0' + digits.slice(2);
+
+  // Cas FR classique : 10 chiffres et commence par 0
+  if (digits.length !== 10 || digits[0] !== '0') return null;
+
+  // Formate en xx.xx.xx.xx.xx
+  return digits.match(/.{1,2}/g).join('.');
 }
 
 /* IPs dans texte libre :
@@ -1076,38 +1127,58 @@ function extractIPsFromPlainText(text) {
    - détecte lignes d’adresse
    - si une ligne n’a pas CP/ville, essaie de regarder la ligne suivante
 */
-function extractPostalAddresses(text) {
+function extractPostalAddressesStructured(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-  const results = [];
+  const out = [];
+  const seen = new Set();
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // 1) cherche une ligne "numéro + voie"
-    const m = line.match(REGEX_ADDRESS_LINE);
-    if (m) {
-      // REGEX_ADDRESS_LINE en global peut matcher plusieurs fois,
-      // on relance proprement sur la ligne avec exec en loop.
-      const re = new RegExp(REGEX_ADDRESS_LINE.source, "i");
-      const mm = re.exec(line);
-      if (mm) {
-        const voie = (mm[1] || "").trim();
-        let cp = (mm[2] || "").trim();
-        let ville = (mm[3] || "").trim();
+    // On tente de capter "num + voie + nom voie" (+ éventuellement CP/Ville)
+    const re = new RegExp(REGEX_ADDRESS_LINE.source, "i");
+    const mm = re.exec(line);
 
-        // 2) si pas de CP/ville dans la même ligne, regarde la suivante
-        if ((!cp || !ville) && lines[i + 1]) {
-          const m2 = lines[i + 1].match(/^\s*(\d{5})\s+(.+)\s*$/);
-          if (m2) {
-            cp = cp || m2[1].trim();
-            ville = ville || m2[2].trim();
-          }
-        }
+    if (!mm) continue;
 
-        const composed = [voie, (cp && ville ? `${cp} ${ville}` : "")].filter(Boolean).join(", ");
-        results.push(composed);
+    const adresse = (mm[1] || '').trim();
+    let codePostal = (mm[2] || '').trim();
+    let ville = (mm[3] || '').trim();
+
+    // Si CP/ville manquent, on regarde la ligne suivante
+    if ((!codePostal || !ville) && lines[i + 1]) {
+      const next = lines[i + 1];
+      const m2 = next.match(/^(\d{5})\s+(.+)$/);
+      if (m2) {
+        codePostal = codePostal || m2[1].trim();
+        ville = ville || m2[2].trim();
       }
     }
+
+    // Normalisation légère ville (espaces)
+    ville = ville.replace(/\s{2,}/g, ' ').trim();
+
+    // Si pas de CP/Ville, on garde quand même l’adresse (mais colonnes vides)
+    const key = `${adresse.toLowerCase()}|${codePostal}|${ville.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({ adresse, ville, codePostal });
+  }
+
+  // Tri : CP puis ville puis adresse
+  out.sort((a, b) => {
+    const acp = a.codePostal || '';
+    const bcp = b.codePostal || '';
+    if (acp !== bcp) return acp.localeCompare(bcp);
+    const av = (a.ville || '').localeCompare(b.ville || '');
+    if (av !== 0) return av;
+    return (a.adresse || '').localeCompare(b.adresse || '');
+  });
+
+  return out;
+}
 
     // 3) parfois on a CP+ville sans la voie (on peut le garder en "partiel")
     const cpv = line.match(/^\d{5}\s+.+$/);
