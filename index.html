@@ -136,6 +136,22 @@
   }
 }
 
+/* Réquisition : grille plus serrée + alignements DSFR */
+.genesis-check-grid {
+  gap: 0.4rem 1.5rem; /* + serré verticalement */
+}
+
+/* DSFR met parfois des marges/paddings : on neutralise dans la grille */
+.genesis-check-grid .fr-checkbox-group {
+  margin: 0;          /* enlève les espacements parasites */
+  padding: 0;
+}
+
+/* Aligne bien la checkbox et le label (évite les décalages) */
+.genesis-check-grid .fr-checkbox-group input[type="checkbox"] {
+  margin-top: 0.1rem; /* micro-ajustement visuel */
+}
+
   </style>
 </head>
 
@@ -880,6 +896,12 @@
 const btnBackHomeFromReq = document.getElementById('btn-back-home-from-req');
 const btnShowTutoFromReq = document.getElementById('btn-show-tuto-from-req');
 
+let previousView = viewAnalyse; // par défaut : tuto revient sur Analyse entête
+
+function goToTuto(fromView) {
+  previousView = fromView;
+  showView(viewTuto);
+}
 
   function showView(target) {
     viewHome.hidden = true;
@@ -914,14 +936,15 @@ const btnShowTutoFromReq = document.getElementById('btn-show-tuto-from-req');
   btnShowTuto?.addEventListener('click', () => showView(viewTuto));
 
   // Tutoriel → Analyse
-  btnBackAnalyse?.addEventListener('click', () => showView(viewAnalyse));
+  btnBackAnalyse?.addEventListener('click', () => showView(previousView));
 
   // Analyse → Accueil
   btnBackHome?.addEventListener('click', () => showView(viewHome));
 
 //Vue requisition
   btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
-  btnShowTutoFromReq?.addEventListener('click', () => showView(viewTuto));
+  btnShowTutoFromReq?.addEventListener('click', () => goToTuto(viewReq));
+
 
 </script>
 
