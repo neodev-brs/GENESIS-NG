@@ -884,66 +884,65 @@
 <!-- SCRIPT NAVIGATION -->
 <script>
   const viewHome    = document.getElementById('view-home');
-  const viewAnalyse = document.getElementById('view-analyse');
-  const viewTuto    = document.getElementById('view-tuto');
+const viewAnalyse = document.getElementById('view-analyse');
+const viewTuto    = document.getElementById('view-tuto');
+const viewReq     = document.getElementById('view-req');
 
-  const btnShowTuto    = document.getElementById('btn-show-tuto');
-  const btnBackAnalyse = document.getElementById('btn-back-analyse');
-  const btnBackHome    = document.getElementById('btn-back-home');
-
-  const viewReq = document.getElementById('view-req');
+const btnShowTuto    = document.getElementById('btn-show-tuto');
+const btnBackAnalyse = document.getElementById('btn-back-analyse');
+const btnBackHome    = document.getElementById('btn-back-home');
 
 const btnBackHomeFromReq = document.getElementById('btn-back-home-from-req');
 const btnShowTutoFromReq = document.getElementById('btn-show-tuto-from-req');
 
-let previousView = viewAnalyse; // par défaut : tuto revient sur Analyse entête
+function showView(target) {
+  viewHome.hidden = true;
+  viewAnalyse.hidden = true;
+  viewReq.hidden = true;
+  viewTuto.hidden = true;
+
+  target.hidden = false;
+  window.scrollTo(0, 0);
+}
+
+/* ✅ mémorise d’où on vient pour le bouton Retour du tuto */
+let previousView = viewAnalyse; // défaut
 
 function goToTuto(fromView) {
   previousView = fromView;
   showView(viewTuto);
 }
 
-  function showView(target) {
-    viewHome.hidden = true;
-    viewAnalyse.hidden = true;
-    viewTuto.hidden = true;
-    viewReq.hidden = true;
-    
-    target.hidden = false;
-    window.scrollTo(0, 0);
+document.addEventListener('click', (e) => {
+  const goAnalyse = e.target.closest('#btn-go-analyse');
+  if (goAnalyse) {
+    e.preventDefault();
+    showView(viewAnalyse);
+    return;
   }
 
-  // ✅ Accueil → Analyse (CARTE cliquable)
-  // On écoute tout le document et on récupère le lien/clique cible même si tu cliques sur un élément enfant
-  document.addEventListener('click', (e) => {
-    const goAnalyse = e.target.closest('#btn-go-analyse'); // l'ID doit être sur le <a> de la carte
-    if (goAnalyse) {
-      e.preventDefault();
-      showView(viewAnalyse);
-      return;
-    }
+  const goReq = e.target.closest('#btn-go-req');
+  if (goReq) {
+    e.preventDefault();
+    showView(viewReq);
+    return;
+  }
+});
 
-    const goReq = e.target.closest('#btn-go-req'); // carte V2
-    if (goReq) {
-      e.preventDefault(); // on bloque la navigation
-      showView(viewReq);
+// Analyse entête → Tutoriel
+btnShowTuto?.addEventListener('click', () => goToTuto(viewAnalyse));
 
-      return;
-    }
-  });
+// Analyse réquisition → Tutoriel
+btnShowTutoFromReq?.addEventListener('click', () => goToTuto(viewReq));
 
-  // Analyse → Tutoriel
-  btnShowTuto?.addEventListener('click', () => showView(viewTuto));
+// Tutoriel → vue précédente (analyse entête OU réquisition)
+btnBackAnalyse?.addEventListener('click', () => showView(previousView));
 
-  // Tutoriel → Analyse
-  btnBackAnalyse?.addEventListener('click', () => showView(previousView));
+// Analyse → Accueil
+btnBackHome?.addEventListener('click', () => showView(viewHome));
 
-  // Analyse → Accueil
-  btnBackHome?.addEventListener('click', () => showView(viewHome));
-
-//Vue requisition
-  btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
-  btnShowTutoFromReq?.addEventListener('click', () => goToTuto(viewReq));
+// Réquisition → Accueil
+btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
 
 
 </script>
