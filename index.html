@@ -105,14 +105,15 @@
 
 /* ---- Cartes accueil : image en haut, SVG non zoomé ---- */
 .fr-card__img {
-  padding: 1rem;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: 1.25rem;          /* respirations DSFR-like */
 }
 
+/* Taille du SVG (tu peux changer la valeur) */
 .fr-card__img img {
-  width: 210px;
+  width: 210px;               /* <- c’est ici que tu gères la taille */
   height: 120px;
   object-fit: contain;
   display: block;
@@ -193,7 +194,12 @@
 
  <!-- CARTE 2 : Résultat réquisition (désactivée) -->
 <div class="fr-col-12 fr-col-md-6">
-  <div class="fr-card fr-enlarge-link fr-card--horizontal" aria-disabled="true">
+  <div class="fr-card fr-enlarge-link" aria-disabled="true">
+
+    <!-- Image / SVG de la carte (AU-DESSUS) -->
+    <div class="fr-card__img">
+      <img src="assets/svg/data-visualization.svg" alt="" aria-hidden="true">
+    </div>
 
     <div class="fr-card__body">
       <div class="fr-card__content">
@@ -208,19 +214,9 @@
         </p>
 
         <div class="fr-card__end">
-          <p class="fr-card__detail fr-icon-lock-line">
-            Disponible prochainement
-          </p>
+          <p class="fr-card__detail fr-icon-lock-line">Disponible prochainement</p>
         </div>
       </div>
-    </div>
-
-    <!-- Image / SVG de la carte -->
-    <div class="fr-card__img">
-      <img
-        src="assets/svg/data-visualization.svg"
-        alt=""
-        aria-hidden="true">
     </div>
 
   </div>
