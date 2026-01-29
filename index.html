@@ -95,14 +95,6 @@
   display: block;            /* supprime les décalages baseline */
 }
 
-/* ---- Cartes accueil : taille contrôlée du SVG ---- */
-.fr-card__img {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
 /* Fixe une taille visuelle, sans zoom */
 .fr-card__img img {
   width: 64px;
@@ -111,8 +103,19 @@
   display: block;
 }
 
+/* ---- Cartes accueil : image en haut, SVG non zoomé ---- */
 .fr-card__img {
-  min-width: 96px; /* réserve une colonne image stable */
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fr-card__img img {
+  width: 140px;       /* ajuste : 120/140/160 selon ton goût */
+  height: 80px;       /* garde une hauteur raisonnable */
+  object-fit: contain;
+  display: block;
 }
 
   </style>
@@ -156,10 +159,15 @@
 
           <div class="fr-grid-row fr-grid-row--gutters">
 
-  <!-- CARTE 1 : Entête de mail -->
+  <!-- CARTE 1 : Entête de mail (VERTICALE) -->
 <div class="fr-col-12 fr-col-md-6">
-  <div class="fr-card fr-enlarge-link fr-card--horizontal">
+  <div class="fr-card fr-enlarge-link">
     
+    <!-- Image / SVG de la carte -->
+    <div class="fr-card__img">
+      <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
+    </div>
+
     <div class="fr-card__body">
       <div class="fr-card__content">
         <h3 class="fr-card__title">
@@ -178,11 +186,6 @@
           </p>
         </div>
       </div>
-    </div>
-
-    <!-- Image / SVG de la carte -->
-    <div class="fr-card__img">
-      <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
     </div>
 
   </div>
