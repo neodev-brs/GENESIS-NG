@@ -727,26 +727,38 @@
   }
 
   function extractPostalAddressesStructured(text) {
-  const rawLines = text.split(/\r?\n/);
+  const rawLines = (text || '').split(/\r?\n/);
 
-  // garde les lignes même si elles contiennent des TAB, mais vire les vides
-  const lines = rawLines.map(l => (l ?? '').trim()).filter(Boolean);
+  const STREET = /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
+  const DATE_ONLY = /^\s*\d{4}\/\d{2}\/\d{2}\s*$/;
+  const BAD_WORDS = /\b(créé sur|issuer|mastercard|visa|email|nom|numéro de téléphone|telephone|tél|talon)\b/i;
 
   const out = [];
   const seen = new Set();
 
-  const STREET_HINT = /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|place|quai|cours|voie|square|résidence|residence)\b/i;
-
-  function normSpaces(s) {
-    return (s || '').replace(/\s{2,}/g, ' ').trim();
-  }
+  const norm = (s) => String(s || '').replace(/\s{2,}/g, ' ').trim();
 
   function addRow(adresse, ville, codePostal) {
-    adresse = normSpaces(adresse);
-    ville = normSpaces(ville);
-    codePostal = (codePostal || '').trim();
+    adresse = norm(adresse);
+    ville = norm(ville);
+    codePostal = norm(codePostal);
 
+    // règles strictes : adresse doit vraiment ressembler à une voie FR
     if (!adresse) return;
+    if (DATE_ONLY.test(adresse)) return;
+    if (BAD_WORDS.test(adresse)) return;
+
+    // numéro (1 à 5) éventuellement "A/B/bis/ter", + type de voie obligatoire
+    const HAS_NUMBER_AND_STREET =
+      /^\s*\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?\b/i.test(adresse) && STREET.test(adresse);
+
+    if (!HAS_NUMBER_AND_STREET) return;
+
+    // ville : si elle contient des chiffres, on évite (ça élimine beaucoup de bruit)
+    if (ville && /\d/.test(ville)) ville = '';
+
+    // CP : uniquement 5 chiffres
+    if (codePostal && !/^\d{5}$/.test(codePostal)) codePostal = '';
 
     const key = `${adresse.toLowerCase()}|${(ville || '').toLowerCase()}|${codePostal}`;
     if (seen.has(key)) return;
@@ -755,120 +767,97 @@
     out.push({ adresse, ville, codePostal });
   }
 
-  // essaie de parser une ligne "complète" (virgules / tabs / espaces)
   function parseLine(line) {
-    const s = normSpaces(line);
+    const s = norm(line);
+    if (!s) return;
+    if (DATE_ONLY.test(s)) return;
+    if (BAD_WORDS.test(s)) return;
 
-    // 1) cas "Excel copié" => TAB (adresse / ville / cp ou adresse / cp / ville)
+    // 0) si ça contient un email / tel => pas une adresse postale
+    if (/@/.test(s)) return;
+    if (/(\+33|0)[\s.\-]?\d/.test(s) && !STREET.test(s)) return;
+
+    // 1) cas TAB (copie tableau)
     if (s.includes('\t')) {
-      const cells = s.split('\t').map(c => normSpaces(c)).filter(Boolean);
+      const cells = s.split('\t').map(norm).filter(Boolean);
+
+      // EX: "24"  "Allée Charles Péguy"  "76480"  "Anneville-Ambourville"
+      // EX: "24"  "Allée Charles Péguy"
       if (cells.length >= 2) {
-        const cpIdx = cells.findIndex(c => /\b\d{5}\b/.test(c));
-        const cp = cpIdx >= 0 ? (cells[cpIdx].match(/\b\d{5}\b/) || [''])[0] : '';
-
-        // ville = cellule non-CP la plus “lettres”, souvent juste à côté
-        const candidates = cells.map((c, i) => ({ c, i }))
-          .filter(x => x.i !== cpIdx);
-
+        let adresse = '';
         let ville = '';
-        for (const cand of candidates) {
-          if (/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(cand.c) && !/\d/.test(cand.c)) {
-            ville = cand.c;
-            break;
+        let cp = '';
+
+        // si 1ère cellule = numéro et 2ème contient voie => on fusionne
+        if (/^\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?$/i.test(cells[0]) && STREET.test(cells[1])) {
+          adresse = `${cells[0]} ${cells[1]}`;
+          // cherche CP + ville dans les autres cellules
+          for (let i = 2; i < cells.length; i++) {
+            const mcp = cells[i].match(/\b\d{5}\b/);
+            if (mcp) cp = mcp[0];
+            else if (!ville && /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(cells[i]) && !/\d/.test(cells[i])) ville = cells[i];
           }
+          addRow(adresse, ville, cp);
+          return;
         }
 
-        // adresse = tout ce qui reste (surtout le début)
-        const adresse = candidates
-          .filter(x => x.c !== ville)
-          .map(x => x.c)
-          .join(' ')
-          .trim();
+        // sinon : on reconstruit une adresse à partir des cellules qui ressemblent à une voie
+        const addrIdx = cells.findIndex(c => STREET.test(c));
+        if (addrIdx >= 0) {
+          // si la cellule voie commence par numéro, elle suffit
+          adresse = cells[addrIdx];
+          // sinon si la cellule précédente est un numéro, on la colle
+          if (addrIdx > 0 && /^\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?$/i.test(cells[addrIdx - 1])) {
+            adresse = `${cells[addrIdx - 1]} ${cells[addrIdx]}`;
+          }
 
-        // si adresse vide, on prend le premier champ
-        addRow(adresse || cells[0], ville, cp);
-        return true;
+          for (let i = 0; i < cells.length; i++) {
+            if (i === addrIdx || i === addrIdx - 1) continue;
+            const mcp = cells[i].match(/\b\d{5}\b/);
+            if (mcp) cp = mcp[0];
+            else if (!ville && /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(cells[i]) && !/\d/.test(cells[i])) ville = cells[i];
+          }
+
+          addRow(adresse, ville, cp);
+          return;
+        }
       }
+      return;
     }
 
-    // 2) cas "virgules" => "... , Ville, FR 27400"
-    if (s.includes(',')) {
-      const parts = s.split(',').map(p => normSpaces(p)).filter(Boolean);
+    // 2) cas virgules "... , Ville, FR 27400"
+    if (s.includes(',') && STREET.test(s)) {
+      const parts = s.split(',').map(norm).filter(Boolean);
 
-      // on cherche un CP dans la dernière partie
+      // trouve un CP dans la dernière partie (souvent "FR 27400")
       const last = parts[parts.length - 1] || '';
       const mcp = last.match(/\b(\d{5})\b/);
 
       if (mcp && parts.length >= 2) {
         const cp = mcp[1];
-
-        // ville : souvent l’avant-dernière partie
-        let ville = parts[parts.length - 2] || '';
-
-        // adresse : tout avant la ville
-        let adresse = parts.slice(0, -2).join(' ').trim();
-
-        // cas "24, Allée X, Ville, FR 76480" => adresse = "24 Allée X"
-        // si adresse trop court, on concat plus intelligemment
-        if (parts.length >= 3 && (!adresse || adresse.length < 4)) {
-          adresse = parts.slice(0, -2).join(' ').trim();
-        }
-
+        const ville = parts[parts.length - 2] || '';
+        const adresse = parts.slice(0, -2).join(' ').trim();
         addRow(adresse, ville, cp);
-        return true;
-      }
-
-      // cas "Adresse, Ville" sans CP : on garde partiel si ça ressemble à une voie
-      if (parts.length >= 2 && STREET_HINT.test(s)) {
-        const adresse = parts.slice(0, -1).join(' ').trim();
-        const ville = parts[parts.length - 1].trim();
-        addRow(adresse, ville, '');
-        return true;
+        return;
       }
     }
 
-    // 3) cas "Adresse 27400 Louviers" (CP + ville sur la même ligne)
-    // ou "27400 Louviers" seul
-    let m = s.match(/^(.+?)\s+(\d{5})\s+(.+)$/);
-    if (m) {
-      addRow(m[1], m[3], m[2]);
-      return true;
-    }
+    // 3) cas "Adresse 27400 Ville"
+    if (STREET.test(s)) {
+      const m = s.match(/^(.+?)\s+(\d{5})\s+([A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})$/);
+      if (m) {
+        addRow(m[1], m[3], m[2]);
+        return;
+      }
 
-    m = s.match(/^(\d{5})\s+(.+)$/);
-    if (m) {
-      // CP + ville, sans adresse => pas tout seul (on le traite en "ligne suivante" ailleurs)
-      return false;
+      // 4) adresse seule (sans CP/ville) -> on l’ajoute quand même si elle est valide
+      // MAIS elle doit être une vraie voie avec numéro (sinon on ignore)
+      addRow(s, '', '');
+      return;
     }
-
-    // 4) ligne "adresse" seule : on la traite en "ligne suivante" si next = CP VILLE
-    return false;
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // on tente parse direct
-    const ok = parseLine(line);
-    if (ok) continue;
-
-    // si ça ressemble à une adresse (voie) et que la ligne suivante est "CP VILLE"
-    if (STREET_HINT.test(line) && lines[i + 1]) {
-      const next = normSpaces(lines[i + 1]);
-      const m2 = next.match(/^(\d{5})\s+(.+)$/);
-      if (m2) {
-        addRow(line, m2[2], m2[1]);
-        i++; // on consomme la ligne CP/VILLE
-        continue;
-      }
-    }
-
-    // si ça commence par numéro + voie mais sans CP/Ville, on garde partiel
-    if (/^\d{1,5}\s*(bis|ter|quater)?\b/i.test(line) && STREET_HINT.test(line)) {
-      addRow(line, '', '');
-      continue;
-    }
-  }
+  for (const line of rawLines) parseLine(line);
 
   out.sort((a, b) => {
     const acp = a.codePostal || '';
