@@ -119,32 +119,6 @@
   display: block;
 }
 
-/* Titre + badge alignés proprement */
-.card-title-row {
-  display: flex;
-  align-items: center;   /* alignement vertical parfait */
-  gap: 0.5rem;           /* espace badge / texte */
-}
-
-/* Badge plus discret, sans impacter le layout */
-.fr-badge--sm {
-  font-size: 0.65rem;
-  line-height: 1;
-  padding: 0.25rem 0.5rem;
-}
-
-/* Badge aligné à gauche (au cas où un parent centre) */
-.genesis-badge {
-  display: inline-flex;
-  align-self: flex-start;
-}
-
-/* Badge “fantôme” : garde la place mais ne s’affiche pas */
-.genesis-badge--ghost {
-  visibility: hidden;     /* invisible */
-  pointer-events: none;   /* ne capte pas les clics */
-}
-
   </style>
 </head>
 
@@ -198,13 +172,6 @@
     <div class="fr-card__body">
       <div class="fr-card__content">
         <div class="fr-card__content">
-
-  <!-- Slot badge (invisible) pour aligner avec la carte 2 -->
-  <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge genesis-badge--ghost"
-     aria-hidden="true">
-    Nouveau
-  </p>
-
         <h3 class="fr-card__title">
           <a class="fr-card__link" href="#" id="btn-go-analyse">
             Entête de mail
@@ -237,19 +204,7 @@
 
     <div class="fr-card__body">
       <div class="fr-card__content">
-
-  <!-- Badge AU-DESSUS -->
-  <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge">
-  Nouveau
-</p>
-
-  <!-- Titre pleine largeur -->
-  <h3 class="fr-card__title">
-    <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
-      Résultat de réquisition
-    </a>
   </h3>
-
   <p class="fr-card__desc">
     Extraction depuis un résultat de réquisition
     (mail, IP, téléphone, adresse…)
