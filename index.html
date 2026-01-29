@@ -95,6 +95,22 @@
   display: block;            /* supprime les décalages baseline */
 }
 
+/* ---- Cartes accueil : taille contrôlée du SVG ---- */
+.fr-card__img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Fixe une taille visuelle, sans zoom */
+.fr-card__img img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+}
+
   </style>
 </head>
 
@@ -138,17 +154,8 @@
 
   <!-- CARTE 1 : Entête de mail -->
 <div class="fr-col-12 fr-col-md-6">
-  <div class="fr-card fr-enlarge-link">
+  <div class="fr-card fr-enlarge-link fr-card--horizontal">
     
-    <!-- Image / SVG de la carte -->
-    <div class="fr-card__img">
-      <img
-        src="assets/svg/mail-send.svg"
-      alt=""
-      class="fr-responsive-img"
-      aria-hidden="true">
-    </div>
-
     <div class="fr-card__body">
       <div class="fr-card__content">
         <h3 class="fr-card__title">
@@ -169,8 +176,14 @@
       </div>
     </div>
 
+    <!-- Image / SVG de la carte -->
+    <div class="fr-card__img">
+      <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
+    </div>
+
   </div>
 </div>
+
 
   <!-- CARTE 2 : Résultat réquisition (désactivée) -->
   <div class="fr-col-12 fr-col-md-6">
