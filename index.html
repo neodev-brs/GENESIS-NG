@@ -463,6 +463,75 @@
   </main>
 </div>
 
+<!-- VUE TUTORIEL REQUISITION -->
+<div id="view-tuto-req" hidden>
+  <main class="genesis-main">
+    <div class="fr-container">
+
+      <!-- BARRE ACTIONS (même structure que les autres) -->
+      <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
+        <div class="fr-col">
+          <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-req">
+            <span aria-hidden="true">
+              <svg class="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                   fill="currentColor" width="1.25em" height="1.25em">
+                <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+              </svg>
+            </span>
+            Retour
+          </button>
+        </div>
+        <div class="fr-col"></div>
+      </div>
+
+      <!-- CONTENU TUTO REQUISITION -->
+      <div class="fr-mt-4w">
+        <h1 class="fr-h3">Comment exploiter un résultat de réquisition</h1>
+
+        <p>
+          Ce module sert à extraire rapidement des informations depuis un <strong>copier-coller</strong>
+          de résultat de réquisition (PDF/ODT/CSV/TXT), pour les rendre lisibles et exploitables.
+        </p>
+
+        <h2 class="fr-h5 fr-mt-4w">1) Récupérer le contenu</h2>
+        <ol class="fr-mt-2w">
+          <li>Ouvre le document (PDF, ODT, CSV, TXT…).</li>
+          <li>Sélectionne le contenu utile (évite les pages de garde, signatures énormes, etc.).</li>
+          <li>Copie le texte (<strong>Ctrl + C</strong>).</li>
+          <li>Colle dans le champ <strong>Texte à analyser</strong> du module Réquisition.</li>
+        </ol>
+
+        <h2 class="fr-h5 fr-mt-4w">2) Choisir quoi extraire</h2>
+        <p class="fr-mb-2w">
+          Coche uniquement ce qui t’intéresse :
+        </p>
+        <ul>
+          <li><strong>Adresse e-mail</strong> : identifiants de comptes, contacts, correspondants.</li>
+          <li><strong>Adresse IP</strong> : IP publiques, journaux de connexion, traces techniques.</li>
+          <li><strong>Adresse postale</strong> : domiciliation, livraison, facturation.</li>
+          <li><strong>Téléphone</strong> : numéros, contacts, identifiants mobiles.</li>
+        </ul>
+
+        <h2 class="fr-h5 fr-mt-4w">3) Lancer l’analyse</h2>
+        <ol class="fr-mt-2w">
+          <li>Coche au moins un type.</li>
+          <li>Clique sur <strong>Analyser</strong>.</li>
+          <li>Les résultats apparaissent à droite.</li>
+        </ol>
+
+        <div class="fr-callout fr-mt-4w">
+          <h3 class="fr-callout__title">Conseil</h3>
+          <p class="fr-callout__text">
+            Plus ton texte est “propre” (sans tableaux cassés / colonnes mélangées),
+            plus l’extraction sera fiable. Si besoin, passe par un copier-coller “texte brut”.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
 <!-- DSFR JS -->
 <script src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/dsfr.module.min.js" type="module"></script>
 <script src="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr/dsfr.nomodule.min.js" nomodule></script>
@@ -855,67 +924,63 @@
 <!-- SCRIPT NAVIGATION -->
 <script>
   const viewHome    = document.getElementById('view-home');
-const viewAnalyse = document.getElementById('view-analyse');
-const viewTuto    = document.getElementById('view-tuto');
-const viewReq     = document.getElementById('view-req');
+  const viewAnalyse = document.getElementById('view-analyse');
+  const viewReq     = document.getElementById('view-req');
 
-const btnShowTuto    = document.getElementById('btn-show-tuto');
-const btnBackAnalyse = document.getElementById('btn-back-analyse');
-const btnBackHome    = document.getElementById('btn-back-home');
+  const viewTuto    = document.getElementById('view-tuto');       // tuto entête
+  const viewTutoReq = document.getElementById('view-tuto-req');   // tuto réquisition
 
-const btnBackHomeFromReq = document.getElementById('btn-back-home-from-req');
-const btnShowTutoFromReq = document.getElementById('btn-show-tuto-from-req');
+  const btnShowTuto         = document.getElementById('btn-show-tuto');
+  const btnBackAnalyse      = document.getElementById('btn-back-analyse');
+  const btnBackHome         = document.getElementById('btn-back-home');
 
-function showView(target) {
-  viewHome.hidden = true;
-  viewAnalyse.hidden = true;
-  viewReq.hidden = true;
-  viewTuto.hidden = true;
+  const btnBackHomeFromReq  = document.getElementById('btn-back-home-from-req');
+  const btnShowTutoFromReq  = document.getElementById('btn-show-tuto-from-req');
+  const btnBackReq          = document.getElementById('btn-back-req');
 
-  target.hidden = false;
-  window.scrollTo(0, 0);
-}
+  function showView(target) {
+    viewHome.hidden = true;
+    viewAnalyse.hidden = true;
+    viewReq.hidden = true;
+    viewTuto.hidden = true;
+    viewTutoReq.hidden = true;
 
-/* ✅ mémorise d’où on vient pour le bouton Retour du tuto */
-let previousView = viewAnalyse; // défaut
-
-function goToTuto(fromView) {
-  previousView = fromView;
-  showView(viewTuto);
-}
-
-document.addEventListener('click', (e) => {
-  const goAnalyse = e.target.closest('#btn-go-analyse');
-  if (goAnalyse) {
-    e.preventDefault();
-    showView(viewAnalyse);
-    return;
+    target.hidden = false;
+    window.scrollTo(0, 0);
   }
 
-  const goReq = e.target.closest('#btn-go-req');
-  if (goReq) {
-    e.preventDefault();
-    showView(viewReq);
-    return;
-  }
-});
+  // Cartes accueil
+  document.addEventListener('click', (e) => {
+    const goAnalyse = e.target.closest('#btn-go-analyse');
+    if (goAnalyse) {
+      e.preventDefault();
+      showView(viewAnalyse);
+      return;
+    }
 
-// Analyse entête → Tutoriel
-btnShowTuto?.addEventListener('click', () => goToTuto(viewAnalyse));
+    const goReq = e.target.closest('#btn-go-req');
+    if (goReq) {
+      e.preventDefault();
+      showView(viewReq);
+      return;
+    }
+  });
 
-// Analyse réquisition → Tutoriel
-btnShowTutoFromReq?.addEventListener('click', () => goToTuto(viewReq));
+  // Analyse entête → Tuto entête
+  btnShowTuto?.addEventListener('click', () => showView(viewTuto));
 
-// Tutoriel → vue précédente (analyse entête OU réquisition)
-btnBackAnalyse?.addEventListener('click', () => showView(previousView));
+  // Tuto entête → Analyse entête
+  btnBackAnalyse?.addEventListener('click', () => showView(viewAnalyse));
 
-// Analyse → Accueil
-btnBackHome?.addEventListener('click', () => showView(viewHome));
+  // Réquisition → Tuto réquisition
+  btnShowTutoFromReq?.addEventListener('click', () => showView(viewTutoReq));
 
-// Réquisition → Accueil
-btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
+  // Tuto réquisition → Réquisition
+  btnBackReq?.addEventListener('click', () => showView(viewReq));
 
-
+  // Retours accueil
+  btnBackHome?.addEventListener('click', () => showView(viewHome));
+  btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
 </script>
 
 <footer class="genesis-credit">
