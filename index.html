@@ -119,6 +119,20 @@
   display: block;
 }
 
+/* Titre + badge alignés proprement */
+.card-title-row {
+  display: flex;
+  align-items: center;   /* alignement vertical parfait */
+  gap: 0.5rem;           /* espace badge / texte */
+}
+
+/* Badge plus discret (DSFR-compatible) */
+.fr-badge--sm {
+  font-size: 0.65rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+}
+
   </style>
 </head>
 
@@ -203,29 +217,34 @@
 
     <div class="fr-card__body">
       <div class="fr-card__content">
-        <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-mb-1v">
-          NOUVEAU
-        </P>
 
-        <h3 class="fr-card__title">
-          <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
-            Résultat de réquisition
-          </a>
-        </h3>
+  <div class="card-title-row">
+    <p class="fr-badge fr-badge--warning fr-badge--icon-lightning-line fr-badge--sm">
+      NOUVEAU
+    </p>
 
-        <p class="fr-card__desc">
-          Extraction depuis un résultat de réquisition (mail, IP, téléphone, adresse…)
-        </p>
-
-
-        <div class="fr-card__end">
-          <p class="fr-card__detail">Formats : ".pdf, .odt, .calc, .csv, .txt"...</p>
-          <p class="fr-card__detail">Ouvrir le module</p>
-        </div>
-      </div>
-    </div>
-
+    <h3 class="fr-card__title">
+      <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
+        Résultat de réquisition
+      </a>
+    </h3>
   </div>
+
+  <p class="fr-card__desc">
+    Extraction depuis un résultat de réquisition
+    (mail, IP, téléphone, adresse…)
+  </p>
+
+  <p class="fr-text--sm fr-mt-2v">
+    Formats : "".pdf, .odt, .calc, .csv, .txt…"
+  </p>
+
+  <div class="fr-card__end">
+    <p class="fr-card__detail fr-icon-lock-line">
+      Ouvrir le module
+    </p>
+  </div>
+
 </div>
 
 
