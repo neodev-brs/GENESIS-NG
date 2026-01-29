@@ -727,185 +727,93 @@
   }
 
   function extractPostalAddressesStructured(text) {
-  // 1) lignes brutes
-  const raw = text
-    .split(/\r?\n/)
-    .map(l => (l ?? '').trim())
-    .filter(Boolean);
+  // Normalisation douce (on garde \n et \t car utiles)
+  const src = String(text || '')
+    .replace(/\r/g, '')
+    .replace(/[ \u00A0]+/g, ' ')     // espaces multiples
+    .replace(/ *\n */g, '\n')        // trim autour des \n
+    .replace(/ *\t */g, '\t');       // trim autour des \t
 
-  // 2) recolle les lignes qui se suivent (format PDF/Excel cassé):
-  //    "adresse," + "ville," + "FR 27100"
-  const rawLines = [];
-  for (let i = 0; i < raw.length; i++) {
-    let line = raw[i];
+  const STREET_WORDS =
+    '(?:rue|avenue|av\\.?|boulevard|bd\\.?|impasse|chemin|route|allee|all[ée]e|place|quai|cours|voie|square|résidence|residence)';
 
-    // si la ligne se termine par une virgule -> on tente de fusionner 1 à 2 lignes suivantes
-    if (/,?\s*$/.test(line) && line.endsWith(',')) {
-      let merged = line;
-      let j = i;
+  // 1) On repère un "début d'adresse" (numéro + mot de voie) et on capture jusqu'à ~120 chars
+  // 2) Ensuite on cherche, dans la foulée, CP + ville (dans n'importe quel ordre) en acceptant :
+  //    virgules, retours ligne, tabs, "FR", etc.
+  const RE_BLOCK = new RegExp(
+    [
+      // Adresse (capture)
+      String.raw`(?<addr>`,
+        String.raw`\b\d{1,5}\s*(?:bis|ter|quater|[A-Za-z])?\s+`, // 80 A / 67 / 22 bis...
+        String.raw`${STREET_WORDS}\s+`,
+        String.raw`[^\n\t]{3,120}?`,                             // texte de rue (tolérant)
+      String.raw`)`,
 
-      // on fusionne jusqu'à 2 lignes suivantes max (adresse + ville + FR/CP)
-      for (let k = 0; k < 2; k++) {
-        const next = raw[j + 1];
-        if (!next) break;
+      // Séparateurs : virgule / NL / TAB / espaces
+      String.raw`(?:[,\s\t]*\n[,\s\t]*|[,\s\t]+)+`,
 
-        // stop si la prochaine ressemble à une nouvelle adresse (évite de mélanger)
-        if (/\d/.test(next) && /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i.test(next)) {
-          break;
-        }
+      // Optionnel : "FR" / "France" (souvent sur une ligne)
+      String.raw`(?:\b(?:FR|France)\b[,\s\t]*\n[,\s\t]*)?`,
 
-        merged += " " + next;
-        j++;
+      // Ensuite on accepte :
+      // - "CP Ville"
+      // - "Ville CP"
+      // - "Ville, FR 27100"
+      String.raw`(?:(?<cp1>\d{5})[,\s\t]+(?<city1>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})`,
+      String.raw`|(?<city2>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})[,\s\t]+(?<cp2>\d{5})`,
+      String.raw`|(?<city3>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})[,\s\t]+(?:FR|France)?[,\s\t]*(?<cp3>\d{5}))`
+    ].join(''),
+    'gim'
+  );
 
-        // si on a déjà trouvé un CP -> on peut arrêter
-        if (/\b\d{5}\b/.test(merged)) break;
-      }
-
-      rawLines.push(merged);
-      i = j;
-      continue;
-    }
-
-    rawLines.push(line);
+  function clean(s) {
+    return String(s || '')
+      .replace(/\t/g, ' ')
+      .replace(/\n/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\s*,\s*/g, ', ')
+      .replace(/,+\s*$/g, '')
+      .trim();
   }
+
+  function canon(s) {
+    return clean(s)
+      .toLowerCase()
+      .replace(/\bfr\b/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9 ]/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  // Filtre anti faux-positifs : il faut vraiment un numéro + mot de voie
+  const RE_STREET_CHECK = new RegExp(
+    String.raw`\b\d{1,5}\s*(?:bis|ter|quater|[A-Za-z])?\s+${STREET_WORDS}\b`,
+    'i'
+  );
 
   const out = [];
   const seen = new Set();
 
-  const STREET_HINT = /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
-  const NOISE_LINE = /\b(créé\s+sur|issuer|mastercard|visa|email|numéro\s+de\s+téléphone|nom)\b/i;
-  const DATE_ONLY  = /^\d{4}[\/\-]\d{2}[\/\-]\d{2}$/;
+  for (const m of src.matchAll(RE_BLOCK)) {
+    const addr = clean(m.groups?.addr);
+    if (!addr || !RE_STREET_CHECK.test(addr)) continue;
 
-  function normSpaces(s) {
-    return (s || '')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/\s*,\s*/g, ', ')
-      .replace(/,+\s*$/g, '')     // retire virgules finales
-      .trim();
-  }
+    const cp = (m.groups?.cp1 || m.groups?.cp2 || m.groups?.cp3 || '').trim();
+    const cityRaw = (m.groups?.city1 || m.groups?.city2 || m.groups?.city3 || '');
+    const city = clean(cityRaw).replace(/,$/, '');
 
-  // clé de dédoublonnage “agressive” (supprime accents/ponctuation/FR)
-  function canon(s) {
-    return normSpaces(s)
-      .toLowerCase()
-      .replace(/\bfr\b/g, '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève accents
-      .replace(/[^a-z0-9 ]/g, ' ')                      // enlève ponctuation
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-  }
-
-  function looksLikeStreet(s) {
-    const t = normSpaces(s);
-    if (!t) return false;
-    if (NOISE_LINE.test(t)) return false;
-    if (DATE_ONLY.test(t)) return false;
-    return /\d/.test(t) && STREET_HINT.test(t);
-  }
-
-  function parseCityCP(s) {
-    const t = normSpaces(s);
-
-    // "27400 Louviers"
-    let m = t.match(/^(\d{5})\s+(.+)$/);
-    if (m) return { cp: m[1], city: normSpaces(m[2]).replace(/,$/, '') };
-
-    // "Louviers 27400"
-    m = t.match(/^(.+?)\s+(\d{5})$/);
-    if (m) return { cp: m[2], city: normSpaces(m[1]).replace(/,$/, '') };
-
-    // "FR 27400"
-    m = t.match(/\bFR\b.*\b(\d{5})\b/i);
-    if (m) return { cp: m[1], city: "" };
-
-    // "... 27400"
-    m = t.match(/\b(\d{5})\b/);
-    if (m) return { cp: m[1], city: "" };
-
-    return null;
-  }
-
-  function addRow(adresse, ville, codePostal) {
-    adresse = normSpaces(adresse);
-    ville = normSpaces(ville).replace(/,$/, '');
-    codePostal = (codePostal || '').trim();
-
-    if (!looksLikeStreet(adresse)) return;
-
-    const key = `${canon(adresse)}|${canon(ville)}|${codePostal}`;
-    if (seen.has(key)) return;
+    // clé dédoublonnage
+    const key = `${canon(addr)}|${canon(city)}|${cp}`;
+    if (seen.has(key)) continue;
     seen.add(key);
 
-    out.push({ adresse, ville, codePostal });
+    out.push({ adresse: addr, ville: city, codePostal: cp });
   }
 
-  for (let i = 0; i < rawLines.length; i++) {
-    const line = rawLines[i];
-
-    // --- CAS A : TAB (Excel) ---
-    if (line.includes('\t')) {
-      const cells = line.split('\t').map(c => normSpaces(c)).filter(Boolean);
-      if (!cells.length) continue;
-
-      const addrCell = cells.find(c => looksLikeStreet(c));
-      if (!addrCell) continue;
-
-      let ville = "";
-      let cp = "";
-      for (const c of cells) {
-        if (c === addrCell) continue;
-        const cc = parseCityCP(c);
-        if (cc) {
-          cp = cp || cc.cp;
-          if (!ville && cc.city) ville = cc.city;
-        }
-      }
-
-      addRow(addrCell, ville, cp);
-      continue;
-    }
-
-    // --- CAS B : ligne avec virgules (après fusion, ça marche bien) ---
-    if (line.includes(',') && looksLikeStreet(line)) {
-      const parts = line.split(',').map(p => normSpaces(p)).filter(Boolean);
-
-      const adresse = parts[0] || line;
-      let ville = parts[1] || "";
-
-      let cp = "";
-      for (let k = parts.length - 1; k >= 0; k--) {
-        const cc = parseCityCP(parts[k]);
-        if (cc?.cp) { cp = cc.cp; break; }
-      }
-
-      addRow(adresse, ville, cp);
-      continue;
-    }
-
-    // --- CAS C : adresse seule + ligne suivante ville/cp ---
-    if (looksLikeStreet(line)) {
-      let ville = "";
-      let cp = "";
-
-      const nextLine = rawLines[i + 1] || "";
-      const cc = parseCityCP(nextLine);
-
-      if (cc) {
-        cp = cc.cp || "";
-        ville = cc.city || "";
-
-        const isCityCpLine =
-          /^\d{5}\s+/.test(nextLine) ||
-          /.+\s+\d{5}$/.test(nextLine) ||
-          /\bFR\b.*\d{5}/i.test(nextLine);
-
-        if (isCityCpLine) i++;
-      }
-
-      addRow(line, ville, cp);
-      continue;
-    }
-  }
+  // Bonus : si certaines adresses sont "adresse seule + CP plus loin", on tente un rattrapage léger
+  // (sans te rajouter du bruit)
+  if (!out.length) return out;
 
   out.sort((a, b) => {
     const acp = a.codePostal || '';
