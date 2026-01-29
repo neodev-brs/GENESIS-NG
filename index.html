@@ -122,6 +122,20 @@
   pointer-events: none;
 }
 
+/* Réquisition : checkboxes en 2 colonnes (2/2) */
+.genesis-check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem; /* vertical / horizontal */
+}
+
+/* Sur petits écrans : repasse en 1 colonne */
+@media (max-width: 48em) {
+  .genesis-check-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
   </style>
 </head>
 
@@ -321,6 +335,89 @@
         <section>
           <h2 class="fr-h5">Résultats</h2>
           <div id="results" class="results fr-text--sm">
+            Aucun résultat pour le moment.
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- VUE REQUISITION -->
+<div id="view-req" hidden>
+  <main class="genesis-main">
+    <div class="fr-container">
+
+      <!-- BARRE ACTIONS (même structure que Analyse) -->
+      <div class="genesis-actions">
+        <div>
+          <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-home-from-req">
+            <span aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                   fill="currentColor" width="1.25em" height="1.25em">
+                <path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589Z"/>
+              </svg>
+            </span>
+            Retour
+          </button>
+        </div>
+
+        <div class="genesis-actions-right">
+          <button id="btn-show-tuto-from-req" class="fr-btn fr-btn--secondary">
+            Tutoriel
+          </button>
+        </div>
+      </div>
+
+      <div class="genesis-grid">
+        <!-- GAUCHE -->
+        <section>
+          <h2 class="fr-h5">Texte à analyser</h2>
+
+          <textarea
+            id="inputReqText"
+            class="fr-input"
+            rows="6"
+            placeholder="Collez ici le contenu du résultat de réquisition…"></textarea>
+
+          <fieldset class="fr-fieldset fr-mt-2w">
+            <legend class="fr-fieldset__legend">
+              Types d’éléments à extraire
+            </legend>
+
+            <div class="fr-fieldset__content genesis-check-grid">
+              <div class="fr-checkbox-group">
+                <input type="checkbox" id="req-chk-mail">
+                <label for="req-chk-mail">Adresse e-mail</label>
+              </div>
+
+              <div class="fr-checkbox-group">
+                <input type="checkbox" id="req-chk-ip">
+                <label for="req-chk-ip">Adresse IP</label>
+              </div>
+
+              <div class="fr-checkbox-group">
+                <input type="checkbox" id="req-chk-postal">
+                <label for="req-chk-postal">Adresse postale</label>
+              </div>
+
+              <div class="fr-checkbox-group">
+                <input type="checkbox" id="req-chk-phone">
+                <label for="req-chk-phone">Téléphone</label>
+              </div>
+            </div>
+          </fieldset>
+
+          <button id="btn-req-analyze" class="fr-btn fr-mt-2w">
+            Analyser
+          </button>
+        </section>
+
+        <!-- DROITE -->
+        <section>
+          <h2 class="fr-h5">Résultats</h2>
+          <div id="req-results" class="results fr-text--sm">
             Aucun résultat pour le moment.
           </div>
         </section>
@@ -778,11 +875,18 @@
   const btnBackAnalyse = document.getElementById('btn-back-analyse');
   const btnBackHome    = document.getElementById('btn-back-home');
 
+  const viewReq = document.getElementById('view-req');
+
+const btnBackHomeFromReq = document.getElementById('btn-back-home-from-req');
+const btnShowTutoFromReq = document.getElementById('btn-show-tuto-from-req');
+
+
   function showView(target) {
     viewHome.hidden = true;
     viewAnalyse.hidden = true;
     viewTuto.hidden = true;
-
+    viewReq.hidden = true;
+    
     target.hidden = false;
     window.scrollTo(0, 0);
   }
@@ -800,6 +904,8 @@
     const goReq = e.target.closest('#btn-go-req'); // carte V2
     if (goReq) {
       e.preventDefault(); // on bloque la navigation
+      showView(viewReq);
+
       return;
     }
   });
@@ -812,6 +918,11 @@
 
   // Analyse → Accueil
   btnBackHome?.addEventListener('click', () => showView(viewHome));
+
+//Vue requisition
+  btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
+  btnShowTutoFromReq?.addEventListener('click', () => showView(viewTuto));
+
 </script>
 
 <footer class="genesis-credit">
