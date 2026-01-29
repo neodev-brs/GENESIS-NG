@@ -858,12 +858,14 @@
           cp = cc.cp || "";
           ville = cc.city || "";
           // si la ligne suivante n'est QUE "ville cp", on la consomme
-          if ((cc.cp && cc.city) || DATE_ONLY.test(rawLines[i + 1]) === false) {
-            // on évite de "manger" une ligne non liée, donc on consomme seulement si ça ressemble vraiment à ville/cp
-            if (/^\d{5}\s+/.test(rawLines[i + 1]) || /.+\s+\d{5}$/.test(rawLines[i + 1]) || /\bFR\b.*\d{5}/i.test(rawLines[i + 1])) {
-              i++;
-            }
-          }
+          // on consomme la ligne suivante UNIQUEMENT si elle ressemble vraiment à "ville cp" / "cp ville" / "FR 27400"
+const nextLine = rawLines[i + 1] || "";
+const isCityCpLine =
+  /^\d{5}\s+/.test(nextLine) ||
+  /.+\s+\d{5}$/.test(nextLine) ||
+  /\bFR\b.*\d{5}/i.test(nextLine);
+
+if (isCityCpLine) i++;
         }
       }
 
