@@ -95,28 +95,31 @@
   display: block;            /* supprime les décalages baseline */
 }
 
-/* Fixe une taille visuelle, sans zoom */
-.fr-card__img img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  display: block;
-}
-
-/* ---- Cartes accueil : image en haut, SVG non zoomé ---- */
-.fr-card__img {
+/* === Cartes accueil (DSFR vertical) === */
+.genesis-card-img {
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 1.25rem;          /* respirations DSFR-like */
+  padding: 1.25rem;     /* respiration */
 }
 
-/* Taille du SVG (tu peux changer la valeur) */
-.fr-card__img img {
-  width: 210px;               /* <- c’est ici que tu gères la taille */
+/* Taille du SVG (ne change pas la carte, juste l’image) */
+.genesis-card-img img {
+  width: 210px;
   height: 120px;
   object-fit: contain;
   display: block;
+}
+
+/* Badge : aligné à gauche */
+.genesis-badge {
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+/* Slot badge fantôme (réserve la hauteur pour aligner les titres) */
+.genesis-badge--ghost {
+  visibility: hidden;
+  pointer-events: none;
 }
 
   </style>
@@ -160,73 +163,94 @@
 
           <div class="fr-grid-row fr-grid-row--gutters">
 
-  <!-- CARTE 1 : Entête de mail (VERTICALE) -->
-<div class="fr-col-12 fr-col-md-6">
-  <div class="fr-card fr-enlarge-link">
-    
-    <!-- Image / SVG de la carte -->
-    <div class="fr-card__img">
-      <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
-    </div>
+            <!-- CARTE 1 : Entête de mail (VERTICALE) -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-card fr-enlarge-link">
 
-    <div class="fr-card__body">
-      <div class="fr-card__content">
-        <div class="fr-card__content">
-        <h3 class="fr-card__title">
-          <a class="fr-card__link" href="#" id="btn-go-analyse">
-            Entête de mail
-          </a>
-        </h3>
+                <!-- Image / SVG -->
+                <div class="fr-card__img genesis-card-img">
+                  <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
+                </div>
 
-        <p class="fr-card__desc">
-          Extraction d’IP, adresses e-mails et informations sur l’appareil expéditeur.
-        </p>
+                <div class="fr-card__body">
+                  <div class="fr-card__content">
 
-        <div class="fr-card__end">
-          <p class="fr-card__detail">
-            Ouvrir le module
-          </p>
+                    <!-- Slot badge fantôme pour aligner les titres -->
+                    <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge genesis-badge--ghost"
+                       aria-hidden="true">
+                      Nouveau
+                    </p>
+
+                    <h3 class="fr-card__title">
+                      <a class="fr-card__link" href="#" id="btn-go-analyse">
+                        Entête de mail
+                      </a>
+                    </h3>
+
+                    <p class="fr-card__desc">
+                      Extraction d’IP, adresses e-mails et informations sur l’appareil expéditeur.
+                    </p>
+
+                    <div class="fr-card__end">
+                      <p class="fr-card__detail fr-icon-arrow-right-line">
+                        Ouvrir le module
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- CARTE 2 : Résultat réquisition -->
+            <div class="fr-col-12 fr-col-md-6">
+              <div class="fr-card fr-enlarge-link" aria-disabled="true">
+
+                <!-- Image / SVG -->
+                <div class="fr-card__img genesis-card-img">
+                  <img src="assets/svg/data-visualization.svg" alt="" aria-hidden="true">
+                </div>
+
+                <div class="fr-card__body">
+                  <div class="fr-card__content">
+
+                    <!-- Badge AU-DESSUS (gauche) -->
+                    <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge">
+                      Nouveau
+                    </p>
+
+                    <h3 class="fr-card__title">
+                      <a class="fr-card__link" href="#" id="btn-go-req" aria-disabled="true" tabindex="-1">
+                        Résultat de réquisition
+                      </a>
+                    </h3>
+
+                    <p class="fr-card__desc">
+                      Extraction depuis un résultat de réquisition (mail, IP, téléphone, adresse…)
+                    </p>
+
+                    <div class="fr-card__end">
+                      <p class="fr-card__detail">
+                        Formats : “.pdf, .odt, .calc, .csv, .txt…”
+                      </p>
+                      <p class="fr-card__detail">
+                        Ouvrir le module
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div><!-- /.fr-grid-row -->
         </div>
       </div>
     </div>
-
-  </div>
-</div>
-
- <!-- CARTE 2 : Résultat réquisition (désactivée) -->
-<div class="fr-col-12 fr-col-md-6">
-  <div class="fr-card fr-enlarge-link" aria-disabled="true">
-
-    <!-- Image / SVG de la carte (AU-DESSUS) -->
-    <div class="fr-card__img">
-      <img src="assets/svg/data-visualization.svg" alt="" aria-hidden="true">
-    </div>
-
-    <div class="fr-card__body">
-      <div class="fr-card__content">
-  </h3>
-  <p class="fr-card__desc">
-    Extraction depuis un résultat de réquisition
-    (mail, IP, téléphone, adresse…)
-  </p>
-
-  <div class="fr-card__end">
-    <p class="fr-card__detail">
-      Formats : ".pdf, .odt, .calc, .csv, .txt…"
-    </p>
-    <p class="fr-card__detail">
-      Ouvrir le module
-    </p>
-  </div>
-
-</div>
-
-          </div> <!-- .fr-grid-row fr-grid-row--gutters -->
-        </div>   <!-- .fr-col-12 ... -->
-      </div>     <!-- .fr-grid-row fr-grid-row--center ... -->
-    </div>       <!-- .fr-container -->
   </main>
-</div>           <!-- #view-home -->
+</div>
 
 <!-- VUE ANALYSE -->
 <div id="view-analyse" hidden>
