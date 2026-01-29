@@ -919,6 +919,208 @@
 
     output.innerHTML = blocks.join('<br><br>');
   });
+
+  document.getElementById('btn-req-analyze')?.addEventListener('click', () => {
+  const rawText = document.getElementById('inputReqText')?.value || '';
+  const text = decodeQuotedPrintable(rawText);
+
+  const wantMail   = document.getElementById('req-chk-mail')?.checked;
+  const wantIP     = document.getElementById('req-chk-ip')?.checked;
+  const wantPostal = document.getElementById('req-chk-postal')?.checked;
+  const wantPhone  = document.getElementById('req-chk-phone')?.checked;
+
+  const output = document.getElementById('req-results');
+  if (!output) return;
+  output.innerHTML = '';
+
+  if (!wantMail && !wantIP && !wantPostal && !wantPhone) {
+    output.textContent = 'Sélectionne au moins un type d’extraction.';
+    return;
+  }
+  if (!text.trim()) {
+    output.textContent = 'Colle un résultat de réquisition avant de lancer l’analyse.';
+    return;
+  }
+
+  const blocks = [];
+
+  // EMAILS
+  if (wantMail) {
+    const allMails = text.match(REGEX_MAIL) || [];
+    const humanMails = allMails.filter(isHumanEmail);
+    const technicalMails = allMails.filter(m => !isHumanEmail(m));
+
+    const uniqHuman = [...new Set(humanMails)].sort();
+    const uniqTech  = [...new Set(technicalMails)].sort();
+
+    let html = `<strong>Adresses e-mail (${uniqHuman.length})</strong><br><br>`;
+    html += uniqHuman.length ? uniqHuman.join('<br>') : 'Aucune adresse e-mail pertinente trouvée';
+
+    if (uniqTech.length) {
+      html += `
+        <details class="fr-mt-2w">
+          <summary>Voir les résultats techniques (${uniqTech.length})</summary>
+          <div class="fr-mt-1w fr-text--sm">
+            ${uniqTech.join('<br>')}
+          </div>
+        </details>
+      `;
+    }
+    blocks.push(html);
+  }
+
+  // IP
+  if (wantIP) {
+    const ips = extractIPsFromPlainText(text);
+    const publicIPs = ips.filter(isPublicIP);
+    const technicalIPs = ips.filter(ip => !isPublicIP(ip));
+
+    const uniqPublic = [...new Set(publicIPs)].sort();
+    const uniqTech = [...new Set(technicalIPs)].sort();
+
+    let html = `<strong>Adresses IP (${uniqPublic.length})</strong><br><br>`;
+    html += uniqPublic.length
+      ? uniqPublic.map(ip => `• ${ip}`).join('<br>')
+      : 'Aucune adresse IP publique trouvée';
+
+    if (uniqTech.length) {
+      html += `
+        <details class="fr-mt-2w">
+          <summary>Voir les résultats techniques (${uniqTech.length})</summary>
+          <div class="fr-mt-1w fr-text--sm">
+            ${uniqTech.map(ip => `• ${ip}`).join('<br>')}
+          </div>
+        </details>
+      `;
+    }
+    blocks.push(html);
+  }
+
+  // TELEPHONE
+  if (wantPhone) {
+    const phonesRaw = text.match(REGEX_PHONE) || [];
+    const phones = phonesRaw
+      .map(normalizePhone)
+      .filter(p => p.length >= 9); // filtre léger
+
+    const uniq = [...new Set(phones)].sort();
+
+    let html = `<strong>Téléphones (${uniq.length})</strong><br><br>`;
+    html += uniq.length ? uniq.map(p => `• ${p}`).join('<br>') : 'Aucun numéro trouvé';
+    blocks.push(html);
+  }
+
+  // ADRESSE POSTALE
+  if (wantPostal) {
+    const addresses = extractPostalAddresses(text);
+    let html = `<strong>Adresses postales (${addresses.length})</strong><br><br>`;
+    html += addresses.length ? addresses.map(a => `• ${a}`).join('<br>') : 'Aucune adresse postale probable trouvée';
+    blocks.push(html);
+  }
+
+  output.innerHTML = blocks.join('<br><br>');
+});
+
+  /* =========================
+   REQUISITION – REGEX
+   ========================= */
+
+/* Téléphones :
+   - FR : 0X XX XX XX XX ou 0XXXXXXXXX, avec espaces/points/tirets
+   - International : +33..., +32..., etc (basique)
+*/
+const REGEX_PHONE = /(?:\+?\d{1,3}[\s.\-()]*)?(?:0|\(?\d{1,2}\)?)[\s.\-()]*\d(?:[\s.\-]*\d){7,12}\b/g;
+
+/* Adresse postale (heuristique FR) :
+   - Une ligne contenant : numéro + type de voie + nom de voie
+   - Et souvent un code postal + ville (dans la même ligne ou la suivante)
+   ⚠️ C’est une extraction "probable", pas une validation officielle.
+*/
+const REGEX_ADDRESS_LINE = new RegExp(
+  String.raw`(?:^|\n)\s*` +
+  String.raw`(\d{1,5}\s*(?:bis|ter|quater)?\s+` +
+  String.raw`(?:rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|allée|allee|place|quai|cours|voie|square|résidence|residence)\s+` +
+  String.raw`[^\n,]{4,})` +
+  String.raw`(?:[,\s]+(\d{5})\s+([A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,}))?`,
+  "gi"
+);
+
+/* Code postal + ville sur une ligne dédiée (utile si CP/ville est sur la ligne suivante) */
+const REGEX_CP_VILLE = /(?:^|\n)\s*(\d{5})\s+([A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})\s*(?=\n|$)/g;
+
+/* Nettoyage téléphone : enlève séparateurs et garde une forme lisible */
+function normalizePhone(raw) {
+  const s = raw.trim()
+    .replace(/[^\d+]/g, '')         // garde chiffres et +
+    .replace(/^00/, '+');           // 0033 -> +33
+  return s;
+}
+
+/* IPs dans texte libre :
+   on réutilise tes extractIPv4FromText / extractIPv6WithOptionalPortFromText
+   mais sur tout le texte, pas les headers uniquement.
+*/
+function extractIPsFromPlainText(text) {
+  let found = [];
+  found.push(...extractIPv4FromText(text));
+  found.push(...extractIPv6WithOptionalPortFromText(text));
+
+  found = removeTruncatedIPv4(found);
+  found = removeTruncatedIPv6(found);
+
+  // Optionnel : tri/unique
+  return [...new Set(found)].sort();
+}
+
+/* Adresses postales (heuristique) :
+   - détecte lignes d’adresse
+   - si une ligne n’a pas CP/ville, essaie de regarder la ligne suivante
+*/
+function extractPostalAddresses(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  const results = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // 1) cherche une ligne "numéro + voie"
+    const m = line.match(REGEX_ADDRESS_LINE);
+    if (m) {
+      // REGEX_ADDRESS_LINE en global peut matcher plusieurs fois,
+      // on relance proprement sur la ligne avec exec en loop.
+      const re = new RegExp(REGEX_ADDRESS_LINE.source, "i");
+      const mm = re.exec(line);
+      if (mm) {
+        const voie = (mm[1] || "").trim();
+        let cp = (mm[2] || "").trim();
+        let ville = (mm[3] || "").trim();
+
+        // 2) si pas de CP/ville dans la même ligne, regarde la suivante
+        if ((!cp || !ville) && lines[i + 1]) {
+          const m2 = lines[i + 1].match(/^\s*(\d{5})\s+(.+)\s*$/);
+          if (m2) {
+            cp = cp || m2[1].trim();
+            ville = ville || m2[2].trim();
+          }
+        }
+
+        const composed = [voie, (cp && ville ? `${cp} ${ville}` : "")].filter(Boolean).join(", ");
+        results.push(composed);
+      }
+    }
+
+    // 3) parfois on a CP+ville sans la voie (on peut le garder en "partiel")
+    const cpv = line.match(/^\d{5}\s+.+$/);
+    if (cpv && !results.includes(line)) {
+      // On garde seulement si ça ressemble vraiment à "75001 PARIS"
+      const m3 = line.match(/^\d{5}\s+[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,}$/);
+      if (m3) results.push(line);
+    }
+  }
+
+  return [...new Set(results)].filter(Boolean).sort();
+}
+
 </script>
 
 <!-- SCRIPT NAVIGATION -->
