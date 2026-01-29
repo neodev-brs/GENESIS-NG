@@ -1186,8 +1186,6 @@ function extractPostalAddressesStructured(text) {
       // On garde seulement si ça ressemble vraiment à "75001 PARIS"
       const m3 = line.match(/^\d{5}\s+[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,}$/);
       if (m3) results.push(line);
-    }
-  }
 
   return [...new Set(results)].filter(Boolean).sort();
 }
