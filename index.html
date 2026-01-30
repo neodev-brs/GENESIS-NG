@@ -781,13 +781,10 @@ function extractPostalAddressesStructured(text) {
   const STREET_HINT =
     /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
 
-  const START_STREET =
-    /^\s*\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?\s*,?\s*.*\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
-
   const NOISE_LINE =
     /\b(créé\s+sur|issuer|mastercard|visa|email|numéro\s+de\s+téléphone|nom|informations\s+de\s+paiement|historique\s+des\s+adresses)\b/i;
-  const DATE_ONLY = /^\d{4}[\/\-]\d{2}[\/\-]\d{2}$/;
 
+  const DATE_ONLY = /^\d{4}[\/\-]\d{2}[\/\-]\d{2}$/;
   const CP_RE = /\b\d{5}\b/;
 
   function normSpaces(s) {
@@ -812,9 +809,7 @@ function extractPostalAddressesStructured(text) {
   function looksLikeStreet(line) {
     const t = normSpaces(line);
     if (!t) return false;
-    if (NOISE_LINE.test(t)) return false;
     if (DATE_ONLY.test(t)) return false;
-    // au moins un chiffre + un mot de voie
     return /\d/.test(t) && STREET_HINT.test(t);
   }
 
@@ -851,9 +846,8 @@ function extractPostalAddressesStructured(text) {
     let city = "";
     const cpPart = parts[cpIndex] || "";
     const cpLine = parseCityCPLine(cpPart);
-    if (cpLine?.city) {
-      city = cpLine.city;
-    } else {
+    if (cpLine?.city) city = cpLine.city;
+    else {
       const prev = parts[cpIndex - 1] || "";
       if (prev && !/^\s*FR\s*$/i.test(prev)) city = prev;
     }
@@ -882,6 +876,20 @@ function extractPostalAddressesStructured(text) {
     out.push({ adresse, ville, codePostal });
   }
 
+  const INLINE_ADDR_RE = new RegExp(
+    String.raw`(\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?\s*,?\s*` +
+      String.raw`(?:rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b` +
+      String.raw`[^,\n]{2,},\s*[^,\n]{2,},\s*(?:FR\s*)?\d{5})`,
+    "gi"
+  );
+
+  const fullText = raw.join("\n");
+  let mm;
+  while ((mm = INLINE_ADDR_RE.exec(fullText)) !== null) {
+    const parsed = parseCommaAddress(mm[1]);
+    if (parsed) addRow(parsed.adresse, parsed.ville, parsed.codePostal);
+  }
+
   let buf = [];
 
   function flushBuffer() {
@@ -889,7 +897,12 @@ function extractPostalAddressesStructured(text) {
 
     const lines = buf
       .map(normSpaces)
-      .filter(l => l && !/^\s*FR\s*$/i.test(l) && !NOISE_LINE.test(l) && !DATE_ONLY.test(l));
+      .filter(l =>
+        l &&
+        !/^\s*FR\s*$/i.test(l) &&
+        !NOISE_LINE.test(l) &&
+        !DATE_ONLY.test(l)
+      );
 
     buf = [];
     if (!lines.length) return;
@@ -897,7 +910,7 @@ function extractPostalAddressesStructured(text) {
     const joined = normSpaces(lines.join(", "));
     if (joined.includes(",") && CP_RE.test(joined)) {
       const parsed = parseCommaAddress(joined);
-      if (parsed && parsed.adresse) addRow(parsed.adresse, parsed.ville, parsed.codePostal);
+      if (parsed) addRow(parsed.adresse, parsed.ville, parsed.codePostal);
       return;
     }
 
@@ -919,13 +932,15 @@ function extractPostalAddressesStructured(text) {
   for (let i = 0; i < raw.length; i++) {
     const line = raw[i];
 
+
     if (NOISE_LINE.test(line) || DATE_ONLY.test(line) || /numéro\s+de\s+téléphone/i.test(line)) {
       flushBuffer();
       continue;
     }
 
-    if (START_STREET.test(line)) {
-      flushBuffer();
+    if (looksLikeStreet(line)) {
+
+      if (buf.length) flushBuffer();
       buf.push(line);
       if (CP_RE.test(line)) flushBuffer();
       continue;
@@ -933,12 +948,9 @@ function extractPostalAddressesStructured(text) {
 
     if (buf.length) {
       buf.push(line);
-      if (CP_RE.test(line)) {
-        flushBuffer();
-      }
+      if (CP_RE.test(line)) flushBuffer();
       continue;
     }
-
   }
 
   flushBuffer();
@@ -1225,6 +1237,6 @@ function extractPostalAddressesStructured(text) {
   GENESIS 2026 - MDC HUGO BRES--MALANCHERE - DEMO ADI 2026
 </footer>
 
-  <!-- MERCI D'AVOIR JETÉ UN OEIL AU CODE ET N'OUBLIEZ PAS DE VOTER POUR MOI AUX ADI ^^ -->
+  <!-- MERCI D'AVOIR JETÉ UN OEIL AU CODE ET N'OUBLIEZ PAS DE VOTER POUR MON PROJET AUX ADI \_/^<>^\_/ -->
 </body>
 </html>
