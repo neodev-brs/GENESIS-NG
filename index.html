@@ -726,75 +726,215 @@
     return digits.match(/.{1,2}/g).join('.');
   }
 
-  function extractPostalAddressesStructured(text) {
-  const lines = text
+function extractPostalAddressesStructured(text) {
+  // 1) lignes brutes
+  const raw = (text || "")
     .split(/\r?\n/)
-    .map(l => l.trim())
+    .map(l => (l ?? "").trim())
     .filter(Boolean);
 
-  const STREET = /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|résidence|residence)\b/i;
-  const STOP = /^(numéro de téléphone|créé sur|email|issuer|visa|mastercard|nom)$/i;
-
-  const results = [];
+  const out = [];
   const seen = new Set();
 
-  let buffer = [];
+  // mots-clés voie + accepte "24," / "80 A" etc.
+  const STREET_HINT =
+    /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
+
+  // détecte “début de voie” (num + éventuellement virgule + type)
+  const START_STREET =
+    /^\s*\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?\s*,?\s*.*\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
+
+  const NOISE_LINE =
+    /\b(créé\s+sur|issuer|mastercard|visa|email|numéro\s+de\s+téléphone|nom|informations\s+de\s+paiement|historique\s+des\s+adresses)\b/i;
+  const DATE_ONLY = /^\d{4}[\/\-]\d{2}[\/\-]\d{2}$/;
+
+  const CP_RE = /\b\d{5}\b/;
+
+  function normSpaces(s) {
+    return (s || "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s*,\s*/g, ", ")
+      .replace(/,+\s*$/g, "")
+      .trim();
+  }
+
+  function canon(s) {
+    return normSpaces(s)
+      .toLowerCase()
+      .replace(/\bfr\b/g, "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
+  function looksLikeStreet(line) {
+    const t = normSpaces(line);
+    if (!t) return false;
+    if (NOISE_LINE.test(t)) return false;
+    if (DATE_ONLY.test(t)) return false;
+    // au moins un chiffre + un mot de voie
+    return /\d/.test(t) && STREET_HINT.test(t);
+  }
+
+  // parse "Ville 27400" ou "27400 Ville" (avec ou sans virgules)
+  function parseCityCPLine(line) {
+    const t = normSpaces(line).replace(/\bFR\b/ig, "").trim();
+
+    // "27400 Louviers"
+    let m = t.match(/^(\d{5})\s+(.+)$/);
+    if (m) return { cp: m[1], city: normSpaces(m[2]) };
+
+    // "Louviers 27400" ou "louviers, eure 27400"
+    m = t.match(/^(.+?)\s+(\d{5})$/);
+    if (m) return { cp: m[2], city: normSpaces(m[1]) };
+
+    // "FR 27400" déjà retiré FR => reste "27400"
+    m = t.match(/^(\d{5})$/);
+    if (m) return { cp: m[1], city: "" };
+
+    // contient juste un CP quelque part
+    m = t.match(/\b(\d{5})\b/);
+    if (m) return { cp: m[1], city: "" };
+
+    return null;
+  }
+
+  // parse une adresse "à virgules" robuste (gère "... , Ville, FR 76480")
+  function parseCommaAddress(str) {
+    const s = normSpaces(str);
+    const parts = s.split(",").map(p => normSpaces(p)).filter(Boolean);
+
+    // retrouve le CP (souvent dans le dernier bloc)
+    let cp = "";
+    let cpIndex = -1;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const m = parts[i].match(CP_RE);
+      if (m) { cp = m[0]; cpIndex = i; break; }
+    }
+    if (!cp) return null;
+
+    // ville: soit dans le même bloc que le CP, soit le bloc juste avant si "FR 76480"
+    let city = "";
+    const cpPart = parts[cpIndex] || "";
+    const cpLine = parseCityCPLine(cpPart);
+    if (cpLine?.city) {
+      city = cpLine.city;
+    } else {
+      const prev = parts[cpIndex - 1] || "";
+      // évite de prendre "FR" ou un truc vide
+      if (prev && !/^\s*FR\s*$/i.test(prev)) city = prev;
+    }
+
+    // adresse: tout ce qui est avant la ville/cp
+    let addrParts = parts.slice(0, cpIndex);
+
+    // si on a pris la ville dans le bloc précédent, on la retire de l'adresse
+    if (city && addrParts.length && canon(addrParts[addrParts.length - 1]) === canon(city)) {
+      addrParts = addrParts.slice(0, -1);
+    }
+
+    const adresse = normSpaces(addrParts.join(", "));
+    return { adresse, ville: normSpaces(city), codePostal: cp };
+  }
+
+  function addRow(adresse, ville, codePostal) {
+    adresse = normSpaces(adresse);
+    ville = normSpaces(ville);
+    codePostal = (codePostal || "").trim();
+
+    if (!looksLikeStreet(adresse)) return;
+
+    const key = `${canon(adresse)}|${canon(ville)}|${codePostal}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    out.push({ adresse, ville, codePostal });
+  }
+
+  // --- 2) Extraction par "blocs" (très important pour tes multi-lignes) ---
+  let buf = [];
 
   function flushBuffer() {
-    if (!buffer.length) return;
+    if (!buf.length) return;
 
-    const joined = buffer.join(' ').replace(/\s{2,}/g, ' ').trim();
+    // nettoie FR seul / bruit
+    const lines = buf
+      .map(normSpaces)
+      .filter(l => l && !/^\s*FR\s*$/i.test(l) && !NOISE_LINE.test(l) && !DATE_ONLY.test(l));
 
-    const cpMatch = joined.match(/\b(\d{5})\b/);
-    if (!cpMatch) {
-      buffer = [];
+    buf = [];
+    if (!lines.length) return;
+
+    // si l'ensemble contient une adresse à virgules complète, on la traite en priorité
+    const joined = normSpaces(lines.join(", "));
+    if (joined.includes(",") && CP_RE.test(joined)) {
+      const parsed = parseCommaAddress(joined);
+      if (parsed && parsed.adresse) addRow(parsed.adresse, parsed.ville, parsed.codePostal);
       return;
     }
 
-    const cp = cpMatch[1];
-
-    const cityMatch = joined.match(new RegExp(`${cp}\\s+([^,]+)`, 'i')) ||
-                      joined.match(new RegExp(`([^,]+)\\s+${cp}`, 'i'));
-
-    const city = cityMatch ? cityMatch[1].trim() : '';
-
-    const addr = joined
-      .replace(city, '')
-      .replace(cp, '')
-      .replace(/\bFR\b/i, '')
-      .trim();
-
-    const key = `${addr.toLowerCase()}|${city.toLowerCase()}|${cp}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      results.push({ adresse: addr, ville: city, codePostal: cp });
+    // sinon: on prend la dernière ligne avec CP comme ligne ville/cp
+    let cpLineIndex = -1;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (CP_RE.test(lines[i])) { cpLineIndex = i; break; }
     }
+    if (cpLineIndex === -1) return;
 
-    buffer = [];
+    const cityCp = parseCityCPLine(lines[cpLineIndex]);
+    if (!cityCp?.cp) return;
+
+    // adresse = toutes les lignes avant la ligne ville/cp (inclut apt/lotissement)
+    const addrLines = lines.slice(0, cpLineIndex);
+    const adresse = normSpaces(addrLines.join(", "));
+
+    addRow(adresse, cityCp.city, cityCp.cp);
   }
 
-  for (const line of lines) {
-    if (STOP.test(line)) {
+  for (let i = 0; i < raw.length; i++) {
+    const line = raw[i];
+
+    // stop conditions : on flush si on arrive sur du bruit fort
+    if (NOISE_LINE.test(line) || DATE_ONLY.test(line) || /numéro\s+de\s+téléphone/i.test(line)) {
       flushBuffer();
       continue;
     }
 
-    if (STREET.test(line)) {
+    // si on voit un début d'adresse, on flush l'ancien bloc et on démarre un nouveau
+    if (START_STREET.test(line)) {
       flushBuffer();
-      buffer.push(line);
+      buf.push(line);
+      // si ce début contient déjà CP, on peut flush direct
+      if (CP_RE.test(line)) flushBuffer();
       continue;
     }
 
-    if (buffer.length) {
-      buffer.push(line);
-      if (/\b\d{5}\b/.test(line)) {
+    // si on est dans un bloc, on continue à empiler (apt / lotissement / ville cp / etc.)
+    if (buf.length) {
+      buf.push(line);
+      if (CP_RE.test(line)) {
         flushBuffer();
       }
+      continue;
     }
+
+    // si pas de bloc en cours, on ignore
   }
 
   flushBuffer();
-  return results;
+
+  // tri stable
+  out.sort((a, b) => {
+    const acp = a.codePostal || "";
+    const bcp = b.codePostal || "";
+    if (acp !== bcp) return acp.localeCompare(bcp);
+    const av = (a.ville || "").localeCompare(b.ville || "");
+    if (av !== 0) return av;
+    return (a.adresse || "").localeCompare(b.adresse || "");
+  });
+
+  return out;
 }
 
   /* =========================
