@@ -596,6 +596,61 @@
     return true;
   }
 
+  //EXTRAIRE LES INFOS SUR L'APPAREIL DE L'EXPEDITEUR
+  function extractUserAgentInfo(text) {
+  const lines = text.split(/\r?\n/);
+
+  const mimeLine = lines.find(l => /^mime-version:/i.test(l));
+  const xMailerLine = lines.find(l => /^x-mailer:/i.test(l));
+  const uaLine = lines.find(l => /^user-agent:/i.test(l) || /^x-user-agent:/i.test(l));
+
+  let value = '';
+  if (mimeLine && /\(.*\)/.test(mimeLine)) value = mimeLine.match(/\((.*)\)/)[1];
+  else if (xMailerLine) value = xMailerLine.split(':').slice(1).join(':').trim();
+  else if (uaLine) value = uaLine.split(':').slice(1).join(':').trim();
+
+  if (!value) {
+    const full = text;
+    if (/envoy[eé]\s+à\s+partir\s+de\s+outlook\s+pour\s+ios/i.test(full) || /sent from outlook for ios/i.test(full)) {
+      return { raw: 'Outlook pour iOS', os: 'iOS (Apple)', app: 'Microsoft Outlook', version: '' };
+    }
+    if (/envoy[eé]\s+à\s+partir\s+de\s+outlook\s+pour\s+android/i.test(full) || /sent from outlook for android/i.test(full)) {
+      return { raw: 'Outlook pour Android', os: 'Android', app: 'Microsoft Outlook', version: '' };
+    }
+    return null;
+  }
+
+  let os = 'Inconnu';
+  let app = 'Inconnue';
+  let version = '';
+
+  if (/outlook\s+pour\s+ios/i.test(value)) {
+    os = 'iOS (Apple)';
+    app = 'Microsoft Outlook';
+  } else if (/outlook\s+pour\s+android/i.test(value)) {
+    os = 'Android';
+    app = 'Microsoft Outlook';
+  } else if (/outlook/i.test(value)) {
+    os = 'Windows';
+    app = 'Microsoft Outlook';
+    const v = value.match(/outlook[\s\/]?([\d.]+)/i);
+    if (v) version = v[1];
+  } else if (/mac os x mail/i.test(value) || /apple mail/i.test(value)) {
+    os = 'macOS (Apple)';
+    app = 'Apple Mail';
+    const v = value.match(/mail\s([\d.]+)/i);
+    if (v) version = v[1];
+  } else if (/thunderbird\/([\d.]+)/i.test(value)) {
+    app = 'Mozilla Thunderbird';
+    version = value.match(/thunderbird\/([\d.]+)/i)[1];
+    if (/windows/i.test(value)) os = 'Windows';
+    else if (/mac os x|macintosh/i.test(value)) os = 'macOS';
+    else if (/linux/i.test(value)) os = 'Linux';
+  }
+
+  return { raw: value, os, app, version };
+}
+
   // EXTRACTION IP
   function extractIPv4FromText(s) {
     const out = [];
@@ -1040,9 +1095,22 @@ function extractPostalAddressesStructured(text) {
     }
 
     if (wantAgent) {
-      blocks.push(`<strong>Appareil utilisé et application de l'expéditeur</strong><br>À brancher (comme avant)`);
-    }
+  const agentInfo = extractUserAgentInfo(text);
 
+  if (!agentInfo) {
+    blocks.push(`<strong>Appareil utilisé et application de l'expéditeur</strong><br>Aucune information trouvée`);
+  } else {
+    blocks.push(
+      `<strong>Appareil utilisé et application de l'expéditeur</strong><br>
+      <ul>
+        <li><strong>Système :</strong> ${agentInfo.os}</li>
+        <li><strong>Application :</strong> ${agentInfo.app}</li>
+        ${agentInfo.version ? `<li><strong>Version :</strong> ${agentInfo.version}</li>` : ''}
+        <li><strong>Chaîne brute : </strong><code>${escapeHTML(agentInfo.raw)}</code></li>
+      </ul>`
+    );
+  }
+}
     output.innerHTML = blocks.join('<br><br>');
   });
 
