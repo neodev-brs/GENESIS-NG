@@ -727,104 +727,74 @@
   }
 
   function extractPostalAddressesStructured(text) {
-  // Normalisation douce (on garde \n et \t car utiles)
-  const src = String(text || '')
-    .replace(/\r/g, '')
-    .replace(/[ \u00A0]+/g, ' ')     // espaces multiples
-    .replace(/ *\n */g, '\n')        // trim autour des \n
-    .replace(/ *\t */g, '\t');       // trim autour des \t
+  const lines = text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
 
-  const STREET_WORDS =
-    '(?:rue|avenue|av\\.?|boulevard|bd\\.?|impasse|chemin|route|allee|all[ée]e|place|quai|cours|voie|square|résidence|residence)';
+  const STREET = /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|résidence|residence)\b/i;
+  const STOP = /^(numéro de téléphone|créé sur|email|issuer|visa|mastercard|nom)$/i;
 
-  // 1) On repère un "début d'adresse" (numéro + mot de voie) et on capture jusqu'à ~120 chars
-  // 2) Ensuite on cherche, dans la foulée, CP + ville (dans n'importe quel ordre) en acceptant :
-  //    virgules, retours ligne, tabs, "FR", etc.
-  const RE_BLOCK = new RegExp(
-    [
-      // Adresse (capture)
-      String.raw`(?<addr>`,
-        String.raw`\b\d{1,5}\s*(?:bis|ter|quater|[A-Za-z])?\s+`, // 80 A / 67 / 22 bis...
-        String.raw`${STREET_WORDS}\s+`,
-        String.raw`[^\n\t]{3,120}?`,                             // texte de rue (tolérant)
-      String.raw`)`,
-
-      // Séparateurs : virgule / NL / TAB / espaces
-      String.raw`(?:[,\s\t]*\n[,\s\t]*|[,\s\t]+)+`,
-
-      // Optionnel : "FR" / "France" (souvent sur une ligne)
-      String.raw`(?:\b(?:FR|France)\b[,\s\t]*\n[,\s\t]*)?`,
-
-      // Ensuite on accepte :
-      // - "CP Ville"
-      // - "Ville CP"
-      // - "Ville, FR 27100"
-      String.raw`(?:(?<cp1>\d{5})[,\s\t]+(?<city1>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})`,
-      String.raw`|(?<city2>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})[,\s\t]+(?<cp2>\d{5})`,
-      String.raw`|(?<city3>[A-Za-zÀ-ÖØ-öø-ÿ'’ \-]{2,})[,\s\t]+(?:FR|France)?[,\s\t]*(?<cp3>\d{5}))`
-    ].join(''),
-    'gim'
-  );
-
-  function clean(s) {
-    return String(s || '')
-      .replace(/\t/g, ' ')
-      .replace(/\n/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/\s*,\s*/g, ', ')
-      .replace(/,+\s*$/g, '')
-      .trim();
-  }
-
-  function canon(s) {
-    return clean(s)
-      .toLowerCase()
-      .replace(/\bfr\b/g, '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9 ]/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-  }
-
-  // Filtre anti faux-positifs : il faut vraiment un numéro + mot de voie
-  const RE_STREET_CHECK = new RegExp(
-    String.raw`\b\d{1,5}\s*(?:bis|ter|quater|[A-Za-z])?\s+${STREET_WORDS}\b`,
-    'i'
-  );
-
-  const out = [];
+  const results = [];
   const seen = new Set();
 
-  for (const m of src.matchAll(RE_BLOCK)) {
-    const addr = clean(m.groups?.addr);
-    if (!addr || !RE_STREET_CHECK.test(addr)) continue;
+  let buffer = [];
 
-    const cp = (m.groups?.cp1 || m.groups?.cp2 || m.groups?.cp3 || '').trim();
-    const cityRaw = (m.groups?.city1 || m.groups?.city2 || m.groups?.city3 || '');
-    const city = clean(cityRaw).replace(/,$/, '');
+  function flushBuffer() {
+    if (!buffer.length) return;
 
-    // clé dédoublonnage
-    const key = `${canon(addr)}|${canon(city)}|${cp}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const joined = buffer.join(' ').replace(/\s{2,}/g, ' ').trim();
 
-    out.push({ adresse: addr, ville: city, codePostal: cp });
+    const cpMatch = joined.match(/\b(\d{5})\b/);
+    if (!cpMatch) {
+      buffer = [];
+      return;
+    }
+
+    const cp = cpMatch[1];
+
+    const cityMatch = joined.match(new RegExp(`${cp}\\s+([^,]+)`, 'i')) ||
+                      joined.match(new RegExp(`([^,]+)\\s+${cp}`, 'i'));
+
+    const city = cityMatch ? cityMatch[1].trim() : '';
+
+    const addr = joined
+      .replace(city, '')
+      .replace(cp, '')
+      .replace(/\bFR\b/i, '')
+      .trim();
+
+    const key = `${addr.toLowerCase()}|${city.toLowerCase()}|${cp}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      results.push({ adresse: addr, ville: city, codePostal: cp });
+    }
+
+    buffer = [];
   }
 
-  // Bonus : si certaines adresses sont "adresse seule + CP plus loin", on tente un rattrapage léger
-  // (sans te rajouter du bruit)
-  if (!out.length) return out;
+  for (const line of lines) {
+    if (STOP.test(line)) {
+      flushBuffer();
+      continue;
+    }
 
-  out.sort((a, b) => {
-    const acp = a.codePostal || '';
-    const bcp = b.codePostal || '';
-    if (acp !== bcp) return acp.localeCompare(bcp);
-    const av = (a.ville || '').localeCompare(b.ville || '');
-    if (av !== 0) return av;
-    return (a.adresse || '').localeCompare(b.adresse || '');
-  });
+    if (STREET.test(line)) {
+      flushBuffer();
+      buffer.push(line);
+      continue;
+    }
 
-  return out;
+    if (buffer.length) {
+      buffer.push(line);
+      if (/\b\d{5}\b/.test(line)) {
+        flushBuffer();
+      }
+    }
+  }
+
+  flushBuffer();
+  return results;
 }
 
   /* =========================
