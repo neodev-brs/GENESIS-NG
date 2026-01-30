@@ -29,21 +29,20 @@
   margin-left: auto;
 }
 
-/* Barre actions alignée EXACTEMENT sur les colonnes Texte/Résultats */
+/* Barre boutons */
 .genesis-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;              /* même gap que .genesis-grid */
+  gap: 2rem;              
   align-items: center;
-  margin-bottom: 2rem;    /* équivalent à fr-mb-2w */
+  margin-bottom: 2rem;
 }
 
 .genesis-actions-right {
   display: flex;
-  justify-content: flex-end; /* colle le bouton à droite */
+  justify-content: flex-end;
 }
 
-/* Alignement vertical flèche + texte dans les boutons retour */
 .fr-btn {
   display: inline-flex;
   align-items: center;
@@ -74,35 +73,33 @@
       user-select: none;
     }
 
-    /* Petite aide: aligne le SVG comme dans ton exemple */
     .btn-svg {
       vertical-align: middle;
     }
 
-    /* Alignement vertical icône + texte dans les boutons Retour */
 .fr-btn.fr-btn--icon-left {
-  display: inline-flex;      /* sécurité */
-  align-items: center;       /* centre verticalement */
-  gap: 0.5rem;               /* espace icône/texte (ajuste si tu veux) */
+  display: inline-flex;     
+  align-items: center;       
+  gap: 0.5rem;               
 }
 
 .fr-btn.fr-btn--icon-left > span[aria-hidden="true"] {
-  display: inline-flex;      /* évite le “baseline” */
+  display: inline-flex;
   align-items: center;
 }
 
 .fr-btn.fr-btn--icon-left svg {
-  display: block;            /* supprime les décalages baseline */
+  display: block;
 }
 
-/* === Cartes accueil (DSFR vertical) === */
+/* Cartes accueil */
 .genesis-card-img {
   display: flex;
   justify-content: center;
-  padding: 1.25rem;     /* respiration */
+  padding: 1.25rem;
 }
 
-/* Taille du SVG (ne change pas la carte, juste l’image) */
+
 .genesis-card-img img {
   width: 210px;
   height: 120px;
@@ -110,13 +107,11 @@
   display: block;
 }
 
-/* Badge : aligné à gauche */
 .genesis-badge {
   display: inline-flex;
   align-self: flex-start;
 }
 
-/* Slot badge fantôme (réserve la hauteur pour aligner les titres) */
 .genesis-badge--ghost {
   visibility: hidden;
   pointer-events: none;
@@ -163,11 +158,11 @@
 
           <div class="fr-grid-row fr-grid-row--gutters">
 
-            <!-- CARTE 1 : Entête de mail (VERTICALE) -->
+            <!-- MODULE ENTETE -->
             <div class="fr-col-12 fr-col-md-6">
               <div class="fr-card fr-enlarge-link">
 
-                <!-- Image / SVG -->
+                <!-- SVG -->
                 <div class="fr-card__img genesis-card-img">
                   <img src="assets/svg/mail-send.svg" alt="" aria-hidden="true">
                 </div>
@@ -175,7 +170,7 @@
                 <div class="fr-card__body">
                   <div class="fr-card__content">
 
-                    <!-- Slot badge fantôme pour aligner les titres -->
+                    <!-- ESPACE FANTOME POUR L'ALIGNEMENT -->
                     <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge genesis-badge--ghost"
                        aria-hidden="true">
                       Nouveau
@@ -203,11 +198,11 @@
               </div>
             </div>
 
-            <!-- CARTE 2 : Résultat réquisition -->
+            <!-- MODULE REQUISITIONS -->
             <div class="fr-col-12 fr-col-md-6">
               <div class="fr-card fr-enlarge-link" aria-disabled="true">
 
-                <!-- Image / SVG -->
+                <!-- SVG -->
                 <div class="fr-card__img genesis-card-img">
                   <img src="assets/svg/data-visualization.svg" alt="" aria-hidden="true">
                 </div>
@@ -215,7 +210,7 @@
                 <div class="fr-card__body">
                   <div class="fr-card__content">
 
-                    <!-- Badge AU-DESSUS (gauche) -->
+                    <!-- BADGE NOUVEAU -->
                     <p class="fr-badge fr-badge--new fr-badge--icon-lightning-line fr-badge--sm fr-mb-2v genesis-badge">
                       Nouveau
                     </p>
@@ -245,7 +240,7 @@
               </div>
             </div>
 
-          </div><!-- /.fr-grid-row -->
+          </div>
         </div>
       </div>
     </div>
@@ -257,7 +252,7 @@
   <main class="genesis-main">
     <div class="fr-container">
 
-      <!-- BARRE ACTIONS (alignée sur les 2 colonnes de la grille) -->
+      <!-- BARRE BOUTONS -->
 <div class="genesis-actions">
   <div>
     <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-home">
@@ -335,7 +330,7 @@
   <main class="genesis-main">
     <div class="fr-container">
 
-      <!-- BARRE ACTIONS (même structure que Analyse) -->
+      <!-- BARRE BOUTONS -->
       <div class="genesis-actions">
         <div>
           <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-home-from-req">
@@ -419,7 +414,7 @@
   <main class="genesis-main">
     <div class="fr-container">
 
-      <!-- BARRE ACTIONS (même hauteur/structure que sur Analyse) -->
+      <!-- BARRE BOUTONS -->
       <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
         <div class="fr-col">
           <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-analyse">
@@ -468,7 +463,7 @@
   <main class="genesis-main">
     <div class="fr-container">
 
-      <!-- BARRE ACTIONS (même structure que les autres) -->
+      <!-- BARRE BOUTON -->
       <div class="fr-grid-row fr-mb-2w fr-grid-row--middle">
         <div class="fr-col">
           <button class="fr-btn fr-btn--tertiary fr-btn--icon-left" id="btn-back-req">
@@ -538,9 +533,7 @@
 
   const REGEX_MAIL = /\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/g;
 
-  /* =========================
-     OUTILS (communs)
-  ========================= */
+  // OUTILS
   function escapeHTML(s) {
     return String(s || '')
       .replace(/&/g, "&amp;")
@@ -603,9 +596,7 @@
     return true;
   }
 
-  /* =========================
-     IP extraction (texte libre)
-  ========================= */
+  // EXTRACTION IP
   function extractIPv4FromText(s) {
     const out = [];
     const re = /(^|[^0-9.])((?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3})(?=$|[^0-9.])/g;
@@ -692,9 +683,7 @@
     return [...new Set(found)].sort();
   }
 
-  /* =========================
-     REQUISITION – REGEX (AVANT les listeners)
-  ========================= */
+  // REQUISITIONS REGEX
   const REGEX_PHONE =
     /(?:\+?\d{1,3}[\s.\-()]*)?(?:0|\(?\d{1,2}\)?)[\s.\-()]*\d(?:[\s.\-]*\d){7,12}\b/g;
 
@@ -718,13 +707,11 @@
     return digits.match(/.{1,2}/g).join('.');
   }
 
-  // ====== ARCEP (prefix 4 chiffres -> opérateur) ======
+  // ARCEP
 let PHONE_OPERATOR_MAP = new Map();
 let PHONE_OPERATOR_READY = false;
 
 function parseCSVLine(line) {
-  // CSV simple: séparateur virgule/point-virgule, sans guillemets complexes
-  // (suffisant pour prefix+opérateur)
   const sep = line.includes(';') ? ';' : ',';
   return line.split(sep).map(s => (s ?? '').trim());
 }
@@ -746,7 +733,6 @@ async function loadPhoneOperatorsCSV(url = 'assets/csv/BASE_TPH.csv') {
       const cols = parseCSVLine(lines[i]);
       if (!cols.length) continue;
 
-      // gère header éventuel
       if (i === 0 && /prefix/i.test(cols[0])) continue;
 
       const prefix = (cols[0] || '').replace(/\D/g, '').slice(0, 4);
@@ -767,10 +753,9 @@ async function loadPhoneOperatorsCSV(url = 'assets/csv/BASE_TPH.csv') {
 }
 
 function getOperatorFromPhone(phoneFormatted) {
-  // phoneFormatted exemple: "06.01.08.21.83" ou "+33..."
+  // FORMATAGE NUMERO TPH
   let digits = (phoneFormatted || '').replace(/\D/g, '');
 
-  // normalise +33 -> 0
   if (digits.startsWith('0033')) digits = '33' + digits.slice(4);
   if (digits.startsWith('33')) digits = '0' + digits.slice(2);
 
@@ -780,11 +765,11 @@ function getOperatorFromPhone(phoneFormatted) {
   return PHONE_OPERATOR_MAP.get(prefix4) || 'Inconnu';
 }
 
-// charge au démarrage
+// CHARGEMENT DU CSV AU LANCEMENT DE GENESIS
 loadPhoneOperatorsCSV();
 
+// GESTION COMPLEXE ET TRI DES ADRESSES
 function extractPostalAddressesStructured(text) {
-  // 1) lignes brutes
   const raw = (text || "")
     .split(/\r?\n/)
     .map(l => (l ?? "").trim())
@@ -793,11 +778,9 @@ function extractPostalAddressesStructured(text) {
   const out = [];
   const seen = new Set();
 
-  // mots-clés voie + accepte "24," / "80 A" etc.
   const STREET_HINT =
     /\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
 
-  // détecte “début de voie” (num + éventuellement virgule + type)
   const START_STREET =
     /^\s*\d{1,5}\s*(?:[A-Za-z]|bis|ter|quater)?\s*,?\s*.*\b(rue|avenue|av\.?|boulevard|bd\.?|impasse|chemin|route|all[ée]e|allee|place|quai|cours|voie|square|résidence|residence)\b/i;
 
@@ -835,35 +818,28 @@ function extractPostalAddressesStructured(text) {
     return /\d/.test(t) && STREET_HINT.test(t);
   }
 
-  // parse "Ville 27400" ou "27400 Ville" (avec ou sans virgules)
   function parseCityCPLine(line) {
     const t = normSpaces(line).replace(/\bFR\b/ig, "").trim();
 
-    // "27400 Louviers"
     let m = t.match(/^(\d{5})\s+(.+)$/);
     if (m) return { cp: m[1], city: normSpaces(m[2]) };
 
-    // "Louviers 27400" ou "louviers, eure 27400"
     m = t.match(/^(.+?)\s+(\d{5})$/);
     if (m) return { cp: m[2], city: normSpaces(m[1]) };
 
-    // "FR 27400" déjà retiré FR => reste "27400"
     m = t.match(/^(\d{5})$/);
     if (m) return { cp: m[1], city: "" };
 
-    // contient juste un CP quelque part
     m = t.match(/\b(\d{5})\b/);
     if (m) return { cp: m[1], city: "" };
 
     return null;
   }
 
-  // parse une adresse "à virgules" robuste (gère "... , Ville, FR 76480")
   function parseCommaAddress(str) {
     const s = normSpaces(str);
     const parts = s.split(",").map(p => normSpaces(p)).filter(Boolean);
 
-    // retrouve le CP (souvent dans le dernier bloc)
     let cp = "";
     let cpIndex = -1;
     for (let i = parts.length - 1; i >= 0; i--) {
@@ -872,7 +848,6 @@ function extractPostalAddressesStructured(text) {
     }
     if (!cp) return null;
 
-    // ville: soit dans le même bloc que le CP, soit le bloc juste avant si "FR 76480"
     let city = "";
     const cpPart = parts[cpIndex] || "";
     const cpLine = parseCityCPLine(cpPart);
@@ -880,14 +855,11 @@ function extractPostalAddressesStructured(text) {
       city = cpLine.city;
     } else {
       const prev = parts[cpIndex - 1] || "";
-      // évite de prendre "FR" ou un truc vide
       if (prev && !/^\s*FR\s*$/i.test(prev)) city = prev;
     }
 
-    // adresse: tout ce qui est avant la ville/cp
     let addrParts = parts.slice(0, cpIndex);
 
-    // si on a pris la ville dans le bloc précédent, on la retire de l'adresse
     if (city && addrParts.length && canon(addrParts[addrParts.length - 1]) === canon(city)) {
       addrParts = addrParts.slice(0, -1);
     }
@@ -910,13 +882,11 @@ function extractPostalAddressesStructured(text) {
     out.push({ adresse, ville, codePostal });
   }
 
-  // --- 2) Extraction par "blocs" (très important pour tes multi-lignes) ---
   let buf = [];
 
   function flushBuffer() {
     if (!buf.length) return;
 
-    // nettoie FR seul / bruit
     const lines = buf
       .map(normSpaces)
       .filter(l => l && !/^\s*FR\s*$/i.test(l) && !NOISE_LINE.test(l) && !DATE_ONLY.test(l));
@@ -924,7 +894,6 @@ function extractPostalAddressesStructured(text) {
     buf = [];
     if (!lines.length) return;
 
-    // si l'ensemble contient une adresse à virgules complète, on la traite en priorité
     const joined = normSpaces(lines.join(", "));
     if (joined.includes(",") && CP_RE.test(joined)) {
       const parsed = parseCommaAddress(joined);
@@ -932,7 +901,6 @@ function extractPostalAddressesStructured(text) {
       return;
     }
 
-    // sinon: on prend la dernière ligne avec CP comme ligne ville/cp
     let cpLineIndex = -1;
     for (let i = lines.length - 1; i >= 0; i--) {
       if (CP_RE.test(lines[i])) { cpLineIndex = i; break; }
@@ -942,7 +910,6 @@ function extractPostalAddressesStructured(text) {
     const cityCp = parseCityCPLine(lines[cpLineIndex]);
     if (!cityCp?.cp) return;
 
-    // adresse = toutes les lignes avant la ligne ville/cp (inclut apt/lotissement)
     const addrLines = lines.slice(0, cpLineIndex);
     const adresse = normSpaces(addrLines.join(", "));
 
@@ -952,22 +919,18 @@ function extractPostalAddressesStructured(text) {
   for (let i = 0; i < raw.length; i++) {
     const line = raw[i];
 
-    // stop conditions : on flush si on arrive sur du bruit fort
     if (NOISE_LINE.test(line) || DATE_ONLY.test(line) || /numéro\s+de\s+téléphone/i.test(line)) {
       flushBuffer();
       continue;
     }
 
-    // si on voit un début d'adresse, on flush l'ancien bloc et on démarre un nouveau
     if (START_STREET.test(line)) {
       flushBuffer();
       buf.push(line);
-      // si ce début contient déjà CP, on peut flush direct
       if (CP_RE.test(line)) flushBuffer();
       continue;
     }
 
-    // si on est dans un bloc, on continue à empiler (apt / lotissement / ville cp / etc.)
     if (buf.length) {
       buf.push(line);
       if (CP_RE.test(line)) {
@@ -976,12 +939,10 @@ function extractPostalAddressesStructured(text) {
       continue;
     }
 
-    // si pas de bloc en cours, on ignore
   }
 
   flushBuffer();
 
-  // tri stable
   out.sort((a, b) => {
     const acp = a.codePostal || "";
     const bcp = b.codePostal || "";
@@ -994,9 +955,7 @@ function extractPostalAddressesStructured(text) {
   return out;
 }
 
-  /* =========================
-     LISTENERS – ANALYSE ENTETE
-  ========================= */
+  // ANALYSE DES ENTETES
   document.getElementById('btn-analyze')?.addEventListener('click', () => {
     const rawText = document.getElementById('inputText')?.value || '';
     const text = decodeQuotedPrintable(rawText);
@@ -1075,9 +1034,7 @@ function extractPostalAddressesStructured(text) {
     output.innerHTML = blocks.join('<br><br>');
   });
 
-  /* =========================
-     LISTENER – REQUISITION
-  ========================= */
+  // LISTENER REQUISITIONS
   document.getElementById('btn-req-analyze')?.addEventListener('click', () => {
     const rawText = document.getElementById('inputReqText')?.value || '';
     const text = decodeQuotedPrintable(rawText);
@@ -1127,7 +1084,6 @@ function extractPostalAddressesStructured(text) {
   const phones = phonesRaw.map(normalizePhoneFRDots).filter(Boolean);
   const uniq = [...new Set(phones)].sort();
 
-  // construit lignes (Numéro | Opérateur)
   const rows = uniq.map(num => {
     const op = PHONE_OPERATOR_READY ? getOperatorFromPhone(num) : 'Chargement...';
     return { num, op };
@@ -1209,8 +1165,8 @@ function extractPostalAddressesStructured(text) {
   const viewAnalyse = document.getElementById('view-analyse');
   const viewReq     = document.getElementById('view-req');
 
-  const viewTuto    = document.getElementById('view-tuto');       // tuto entête
-  const viewTutoReq = document.getElementById('view-tuto-req');   // tuto réquisition
+  const viewTuto    = document.getElementById('view-tuto');       // TUTO ENTETE
+  const viewTutoReq = document.getElementById('view-tuto-req');   // TUTO REQUISITION
 
   const btnShowTuto         = document.getElementById('btn-show-tuto');
   const btnBackAnalyse      = document.getElementById('btn-back-analyse');
@@ -1231,7 +1187,7 @@ function extractPostalAddressesStructured(text) {
     window.scrollTo(0, 0);
   }
 
-  // Cartes accueil
+  // CARTES ACCUEIL
   document.addEventListener('click', (e) => {
     const goAnalyse = e.target.closest('#btn-go-analyse');
     if (goAnalyse) {
@@ -1248,19 +1204,19 @@ function extractPostalAddressesStructured(text) {
     }
   });
 
-  // Analyse entête → Tuto entête
+  // ANALYSE ENTETE VERS TUTO ENTETE
   btnShowTuto?.addEventListener('click', () => showView(viewTuto));
 
-  // Tuto entête → Analyse entête
+  // TUTO ENTETE VERS ANALYSE ENTETE
   btnBackAnalyse?.addEventListener('click', () => showView(viewAnalyse));
 
-  // Réquisition → Tuto réquisition
+  // REQUISITIONS VERS TUTO REQUISITION
   btnShowTutoFromReq?.addEventListener('click', () => showView(viewTutoReq));
 
-  // Tuto réquisition → Réquisition
+  // TUTO REQUISITION VERS REQUISITION
   btnBackReq?.addEventListener('click', () => showView(viewReq));
 
-  // Retours accueil
+  // RETOURS ACCUEIL
   btnBackHome?.addEventListener('click', () => showView(viewHome));
   btnBackHomeFromReq?.addEventListener('click', () => showView(viewHome));
 </script>
@@ -1269,5 +1225,6 @@ function extractPostalAddressesStructured(text) {
   GENESIS 2026 - MDC HUGO BRES--MALANCHERE - DEMO ADI 2026
 </footer>
 
+  <!-- MERCI D'AVOIR JETÉ UN OEIL AU CODE ET N'OUBLIEZ PAS DE VOTER POUR MOI AUX ADI ^^ -->
 </body>
 </html>
