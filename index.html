@@ -726,6 +726,71 @@
     return digits.match(/.{1,2}/g).join('.');
   }
 
+  // ====== ARCEP (prefix 4 chiffres -> opérateur) ======
+let PHONE_OPERATOR_MAP = new Map();
+let PHONE_OPERATOR_READY = false;
+
+function parseCSVLine(line) {
+  // CSV simple: séparateur virgule/point-virgule, sans guillemets complexes
+  // (suffisant pour prefix+opérateur)
+  const sep = line.includes(';') ? ';' : ',';
+  return line.split(sep).map(s => (s ?? '').trim());
+}
+
+async function loadPhoneOperatorsCSV(url = 'assets/csv/BASE_TPH.csv') {
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#'));
+
+    const map = new Map();
+
+    for (let i = 0; i < lines.length; i++) {
+      const cols = parseCSVLine(lines[i]);
+      if (!cols.length) continue;
+
+      // gère header éventuel
+      if (i === 0 && /prefix/i.test(cols[0])) continue;
+
+      const prefix = (cols[0] || '').replace(/\D/g, '').slice(0, 4);
+      const operateur = (cols[1] || '').trim();
+
+      if (prefix.length === 4 && operateur) {
+        map.set(prefix, operateur);
+      }
+    }
+
+    PHONE_OPERATOR_MAP = map;
+    PHONE_OPERATOR_READY = true;
+    console.log(`[ARCEP] loaded ${map.size} prefixes`);
+  } catch (e) {
+    PHONE_OPERATOR_READY = false;
+    console.warn('[ARCEP] CSV load failed:', e);
+  }
+}
+
+function getOperatorFromPhone(phoneFormatted) {
+  // phoneFormatted exemple: "06.01.08.21.83" ou "+33..."
+  let digits = (phoneFormatted || '').replace(/\D/g, '');
+
+  // normalise +33 -> 0
+  if (digits.startsWith('0033')) digits = '33' + digits.slice(4);
+  if (digits.startsWith('33')) digits = '0' + digits.slice(2);
+
+  if (digits.length < 4) return 'Inconnu';
+  const prefix4 = digits.slice(0, 4);
+
+  return PHONE_OPERATOR_MAP.get(prefix4) || 'Inconnu';
+}
+
+// charge au démarrage
+loadPhoneOperatorsCSV();
+
 function extractPostalAddressesStructured(text) {
   // 1) lignes brutes
   const raw = (text || "")
@@ -1066,14 +1131,48 @@ function extractPostalAddressesStructured(text) {
     }
 
     if (wantPhone) {
-      const phonesRaw = text.match(REGEX_PHONE) || [];
-      const phones = phonesRaw.map(normalizePhoneFRDots).filter(Boolean);
-      const uniq = [...new Set(phones)].sort();
+  const phonesRaw = text.match(REGEX_PHONE) || [];
+  const phones = phonesRaw.map(normalizePhoneFRDots).filter(Boolean);
+  const uniq = [...new Set(phones)].sort();
 
-      let html = `<strong>Téléphones (${uniq.length})</strong><br><br>`;
-      html += uniq.length ? uniq.map(p => `• ${p}`).join('<br>') : 'Aucun numéro FR valide trouvé';
-      blocks.push(html);
-    }
+  // construit lignes (Numéro | Opérateur)
+  const rows = uniq.map(num => {
+    const op = PHONE_OPERATOR_READY ? getOperatorFromPhone(num) : 'Chargement...';
+    return { num, op };
+  });
+
+  let html = `<strong>Téléphones (${rows.length})</strong><br><br>`;
+
+  if (!rows.length) {
+    html += 'Aucun numéro FR valide trouvé';
+  } else {
+    html += `
+      <div class="fr-table fr-table--no-caption">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Numéro de téléphone</th>
+              <th scope="col">Opérateur</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td>${escapeHTML(r.num)}</td>
+                <td>${escapeHTML(r.op)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="fr-text--xs" style="color:#666;font-style:italic;margin-top:.5rem;">
+        *La portabilité n'est pas prise en compte. Pensez à vérifier sur AEROPE.
+      </p>
+    `;
+  }
+
+  blocks.push(html);
+}
 
     if (wantPostal) {
       const rows = extractPostalAddressesStructured(text);
